@@ -1,0 +1,136 @@
+{
+  "common": {
+    "yes": "Sí",
+    "no": "No",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "offline": "Sin conexión",
+    "online": "Conectado"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "cases": "Casos",
+    "documents": "Documentos", 
+    "deadlines": "Plazos",
+    "learn": "Aprender",
+    "resources": "Recursos"
+  },
+  "home": {
+    "welcome": "Bienvenido a Minerva",
+    "subtitle": "Su asistente legal personal para El Salvador",
+    "disclaimer": "Minerva brinda información educativa, no asesoría legal.",
+    "quickActions": "Acciones Rápidas",
+    "newCase": "Nuevo Caso",
+    "checkDeadlines": "Ver Plazos",
+    "findResources": "Encontrar Recursos",
+    "practiceHearing": "Practicar Audiencia",
+    "recentActivity": "Actividad Reciente"
+  },
+  "cases": {
+    "title": "Mis Casos",
+    "newCase": "Nuevo Caso",
+    "caseWizard": "Asistente de Casos",
+    "whatHappened": "¿Qué pasó?",
+    "options": {
+      "sued": "Me demandaron",
+      "wantToSue": "Quiero demandar",
+      "divorce": "Divorcio",
+      "childSupport": "Pensión alimenticia",
+      "laborDispute": "Conflicto laboral",
+      "propertyDispute": "Disputa de propiedad",
+      "other": "Otro"
+    },
+    "tellMore": "Cuéntenos más detalles:",
+    "whenHappened": "¿Cuándo pasó esto?",
+    "deadline": "Fecha límite",
+    "status": "Estado",
+    "active": "Activo",
+    "completed": "Completado",
+    "pending": "Pendiente"
+  },
+  "documents": {
+    "title": "Documentos",
+    "templates": "Plantillas",
+    "myDocuments": "Mis Documentos",
+    "createNew": "Crear Nuevo",
+    "demanda": "Demanda",
+    "contestacion": "Contestación",
+    "apelacion": "Apelación",
+    "powersOfAttorney": "Poderes",
+    "fillTemplate": "Llenar Plantilla",
+    "downloadPdf": "Descargar PDF",
+    "preview": "Vista Previa"
+  },
+  "deadlines": {
+    "title": "Plazos Legales",
+    "upcoming": "Próximos Vencimientos",
+    "overdue": "Vencidos",
+    "completed": "Completados",
+    "addDeadline": "Agregar Plazo",
+    "daysLeft": "días restantes",
+    "addToCalendar": "Agregar al Calendario",
+    "setReminder": "Configurar Recordatorio"
+  },
+  "learn": {
+    "title": "Biblioteca Legal",
+    "categories": "Categorías",
+    "recent": "Recientes",
+    "favorites": "Favoritos",
+    "courtProcess": "Proceso Judicial",
+    "yourRights": "Sus Derechos",
+    "courtEtiquette": "Protocolo en Corte",
+    "fees": "Costos y Tarifas",
+    "selfRepresentation": "Auto Representación"
+  },
+  "resources": {
+    "title": "Recursos",
+    "courts": "Tribunales",
+    "mediationCenters": "Centros de Mediación",
+    "proBono": "Abogados Pro Bono",
+    "legalAid": "Asistencia Legal Gratuita",
+    "findNearby": "Encontrar Cercanos",
+    "address": "Dirección",
+    "phone": "Teléfono",
+    "hours": "Horarios",
+    "services": "Servicios"
+  },
+  "voice": {
+    "askMinerva": "Pregúntale a Minerva",
+    "listening": "Escuchando...",
+    "processing": "Procesando...",
+    "tapToSpeak": "Toque para hablar",
+    "tapToStop": "Toque para parar",
+    "speakNow": "Hable ahora",
+    "couldNotUnderstand": "No pude entender. Intente de nuevo.",
+    "turnOnMicrophone": "Active el micrófono para usar esta función"
+  },
+  "coach": {
+    "title": "Simulador de Audiencias",
+    "selectScenario": "Seleccionar Escenario",
+    "conciliation": "Conciliación",
+    "hearing": "Audiencia",
+    "practice": "Practicar",
+    "feedback": "Retroalimentación",
+    "startPractice": "Comenzar Práctica",
+    "yourTurn": "Su turno",
+    "judgeResponse": "Respuesta del Juez",
+    "tips": "Consejos",
+    "improvement": "Áreas de Mejora"
+  },
+  "security": {
+    "biometricPrompt": "Use su huella digital o reconocimiento facial para acceder",
+    "unlockRequired": "Desbloqueo requerido",
+    "dataProtected": "Sus datos están protegidos",
+    "encryptionEnabled": "Cifrado activado",
+    "secureMode": "Modo Seguro"
+  }
+}

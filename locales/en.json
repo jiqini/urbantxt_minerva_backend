@@ -1,0 +1,136 @@
+{
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "offline": "Offline",
+    "online": "Online"
+  },
+  "navigation": {
+    "home": "Home",
+    "cases": "Cases",
+    "documents": "Documents",
+    "deadlines": "Deadlines",
+    "learn": "Learn",
+    "resources": "Resources"
+  },
+  "home": {
+    "welcome": "Welcome to Minerva",
+    "subtitle": "Your personal legal assistant for El Salvador",
+    "disclaimer": "Minerva provides educational information, not legal advice.",
+    "quickActions": "Quick Actions",
+    "newCase": "New Case",
+    "checkDeadlines": "Check Deadlines",
+    "findResources": "Find Resources",
+    "practiceHearing": "Practice Hearing",
+    "recentActivity": "Recent Activity"
+  },
+  "cases": {
+    "title": "My Cases",
+    "newCase": "New Case",
+    "caseWizard": "Case Wizard",
+    "whatHappened": "What happened?",
+    "options": {
+      "sued": "I was sued",
+      "wantToSue": "I want to sue",
+      "divorce": "Divorce",
+      "childSupport": "Child support",
+      "laborDispute": "Labor dispute",
+      "propertyDispute": "Property dispute",
+      "other": "Other"
+    },
+    "tellMore": "Tell us more details:",
+    "whenHappened": "When did this happen?",
+    "deadline": "Deadline",
+    "status": "Status",
+    "active": "Active",
+    "completed": "Completed",
+    "pending": "Pending"
+  },
+  "documents": {
+    "title": "Documents",
+    "templates": "Templates",
+    "myDocuments": "My Documents",
+    "createNew": "Create New",
+    "demanda": "Lawsuit",
+    "contestacion": "Answer",
+    "apelacion": "Appeal",
+    "powersOfAttorney": "Powers of Attorney",
+    "fillTemplate": "Fill Template",
+    "downloadPdf": "Download PDF",
+    "preview": "Preview"
+  },
+  "deadlines": {
+    "title": "Legal Deadlines",
+    "upcoming": "Upcoming",
+    "overdue": "Overdue",
+    "completed": "Completed",
+    "addDeadline": "Add Deadline",
+    "daysLeft": "days left",
+    "addToCalendar": "Add to Calendar",
+    "setReminder": "Set Reminder"
+  },
+  "learn": {
+    "title": "Legal Library",
+    "categories": "Categories",
+    "recent": "Recent",
+    "favorites": "Favorites",
+    "courtProcess": "Court Process",
+    "yourRights": "Your Rights",
+    "courtEtiquette": "Court Etiquette",
+    "fees": "Fees and Costs",
+    "selfRepresentation": "Self Representation"
+  },
+  "resources": {
+    "title": "Resources",
+    "courts": "Courts",
+    "mediationCenters": "Mediation Centers",
+    "proBono": "Pro Bono Lawyers",
+    "legalAid": "Free Legal Aid",
+    "findNearby": "Find Nearby",
+    "address": "Address",
+    "phone": "Phone",
+    "hours": "Hours",
+    "services": "Services"
+  },
+  "voice": {
+    "askMinerva": "Ask Minerva",
+    "listening": "Listening...",
+    "processing": "Processing...",
+    "tapToSpeak": "Tap to speak",
+    "tapToStop": "Tap to stop",
+    "speakNow": "Speak now",
+    "couldNotUnderstand": "I couldn't understand. Please try again.",
+    "turnOnMicrophone": "Turn on microphone to use this feature"
+  },
+  "coach": {
+    "title": "Hearing Simulator",
+    "selectScenario": "Select Scenario",
+    "conciliation": "Conciliation",
+    "hearing": "Hearing",
+    "practice": "Practice",
+    "feedback": "Feedback",
+    "startPractice": "Start Practice",
+    "yourTurn": "Your turn",
+    "judgeResponse": "Judge Response",
+    "tips": "Tips",
+    "improvement": "Areas for Improvement"
+  },
+  "security": {
+    "biometricPrompt": "Use your fingerprint or face recognition to access",
+    "unlockRequired": "Unlock required",
+    "dataProtected": "Your data is protected",
+    "encryptionEnabled": "Encryption enabled",
+    "secureMode": "Secure Mode"
+  }
+}
