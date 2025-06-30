@@ -1,23 +1,18 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { PaperProvider } from 'react-native-paper';
-import { useFonts } from 'expo-font';
-import { 
-  Inter_400Regular, 
-  Inter_500Medium, 
-  Inter_600SemiBold, 
-  Inter_700Bold 
-} from '@expo-google-fonts/inter';
+import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
-import '@/utils/i18n'; // Import for initialization side effects
-import { AIProvider } from '@/contexts/AIContext';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   useFrameworkReady();
 
-  const [fontsLoaded, fontError] = useFonts({
+  const [fontsLoaded] = useFonts({
     'Inter-Regular': Inter_400Regular,
     'Inter-Medium': Inter_500Medium,
     'Inter-SemiBold': Inter_600SemiBold,
@@ -25,47 +20,27 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    const setupApp = async () => {
-      try {
-        // Remove the initI18n() call since i18n is auto-initialized on import
-        if (fontsLoaded || fontError) {
-          await SplashScreen.hideAsync();
-        }
-      } catch (error) {
-        console.error('App setup failed:', error);
-        // Hide splash screen even if setup fails
-        if (fontsLoaded || fontError) {
-          await SplashScreen.hideAsync();
-        }
-      }
-    };
-    
-    setupApp();
-  }, [fontsLoaded, fontError]);
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
-  if (!fontsLoaded && !fontError) {
+  if (!fontsLoaded) {
     return null;
   }
 
-  const theme = {
-    colors: {
-      primary: '#003DA5',
-      secondary: '#FF0000',
-      surface: '#FFFFFF',
-      background: '#F8F9FA',
-      onSurface: '#212529',
-      onBackground: '#495057',
-    },
-  };
-
   return (
-    <AIProvider>
-      <PaperProvider theme={theme}>
+    <LanguageProvider>
+      <AuthProvider>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="auth" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="document-form" />
+          <Stack.Screen name="wizard-flow" />
+          <Stack.Screen name="+not-found" />
         </Stack>
-        <StatusBar style="light" backgroundColor="#1e40af" />
-      </PaperProvider>
-    </AIProvider>
+        <StatusBar style="light" backgroundColor="#1e3a8a" />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }

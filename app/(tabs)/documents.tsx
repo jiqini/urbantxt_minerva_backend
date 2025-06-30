@@ -1,636 +1,397 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  TextInput,
-} from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  FileText,
-  Plus,
-  Download,
-  Eye,
-  Search,
-  Filter,
-  ArrowRight,
-  Calendar,
-  User,
-} from 'lucide-react-native';
-
-interface DocumentTemplate {
-  id: string;
-  titleKey: string;
-  description: string;
-  category: string;
-  icon: React.ReactNode;
-  color: string;
-}
-
-interface Document {
-  id: string;
-  title: string;
-  type: string;
-  status: 'draft' | 'completed' | 'pending';
-  createdDate: string;
-  lastModified: string;
-}
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import { FileText, Download, Plus, ChevronRight, Clock, CircleCheck as CheckCircle, Sparkles } from 'lucide-react-native';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { documentService } from '@/services/documentService';
 
 export default function DocumentsScreen() {
-  const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'templates' | 'myDocuments'>('templates');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
+  const { t } = useLanguage();
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
-  const documentTemplates: DocumentTemplate[] = [
-    {
-      id: 'demanda',
-      titleKey: 'documents.demanda',
-      description: 'Plantilla para presentar una demanda civil',
-      category: 'civil',
-      icon: <FileText size={20} color="#003DA5" />,
-      color: '#003DA5',
-    },
-    {
-      id: 'contestacion',
-      titleKey: 'documents.contestacion',
-      description: 'Contestación a una demanda recibida',
-      category: 'civil',
-      icon: <FileText size={20} color="#28A745" />,
-      color: '#28A745',
-    },
-    {
-      id: 'apelacion',
-      titleKey: 'documents.apelacion',
-      description: 'Recurso de apelación',
-      category: 'civil',
-      icon: <FileText size={20} color="#FF6B35" />,
-      color: '#FF6B35',
-    },
-    {
-      id: 'poder',
-      titleKey: 'documents.powersOfAttorney',
-      description: 'Poder general o especial para representación',
-      category: 'general',
-      icon: <FileText size={20} color="#6C5CE7" />,
-      color: '#6C5CE7',
-    },
-  ];
+  const templates = documentService.getDocumentTemplates();
 
-  const myDocuments: Document[] = [
+  const recentDocuments = [
     {
       id: '1',
-      title: 'Contestación - Demanda Laboral',
-      type: 'contestacion',
-      status: 'completed',
-      createdDate: '2025-01-10',
-      lastModified: '2025-01-12',
+      name: 'Contestación - Caso Alimentos',
+      date: '2024-01-15',
+      status: 'Completado',
+      type: 'contestacion'
     },
     {
       id: '2',
-      title: 'Demanda - Pensión Alimenticia',
-      type: 'demanda',
-      status: 'draft',
-      createdDate: '2025-01-08',
-      lastModified: '2025-01-08',
+      name: 'Demanda - Divorcio',
+      date: '2024-01-10',
+      status: 'Borrador',
+      type: 'demanda'
     },
     {
       id: '3',
-      title: 'Poder General - Juan Pérez',
-      type: 'poder',
-      status: 'pending',
-      createdDate: '2025-01-05',
-      lastModified: '2025-01-07',
-    },
+      name: 'Apelación - Sentencia Laboral',
+      date: '2024-01-08',
+      status: 'Completado',
+      type: 'apelacion'
+    }
   ];
 
+  const handleGenerateDocument = (templateId: string) => {
+    router.push({
+      pathname: '/document-form',
+      params: { templateId }
+    });
+  };
+
+  const handleDownloadDocument = async (doc: any) => {
+    try {
+      Alert.alert(
+        'Descargar Documento',
+        `¿Deseas descargar ${doc.name}?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { 
+            text: 'Descargar', 
+            onPress: () => {
+              // Simulate download
+              Alert.alert('Éxito', 'Documento descargado correctamente');
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo descargar el documento');
+    }
+  };
+
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return '#28A745';
-      case 'draft':
-        return '#FFC107';
-      case 'pending':
-        return '#003DA5';
-      default:
-        return '#6C757D';
-    }
+    return status === 'Completado' ? '#10b981' : '#f59e0b';
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'Completado';
-      case 'draft':
-        return 'Borrador';
-      case 'pending':
-        return 'Pendiente';
-      default:
-        return status;
-    }
+  const getStatusIcon = (status: string) => {
+    return status === 'Completado' ? CheckCircle : Clock;
   };
-
-  const handleTemplateSelect = (template: DocumentTemplate) => {
-    setSelectedTemplate(template);
-    setShowTemplateModal(true);
-  };
-
-  const renderTemplatesTab = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.searchBar}>
-        <Search size={20} color="#6C757D" />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar plantillas..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter size={20} color="#6C757D" />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {documentTemplates.map((template) => (
-          <TouchableOpacity
-            key={template.id}
-            style={[styles.templateCard, { borderLeftColor: template.color }]}
-            onPress={() => handleTemplateSelect(template)}
-          >
-            <View style={[styles.templateIcon, { backgroundColor: template.color }]}>
-              {template.icon}
-            </View>
-            <View style={styles.templateContent}>
-              <Text style={styles.templateTitle}>{t(template.titleKey)}</Text>
-              <Text style={styles.templateDescription}>{template.description}</Text>
-            </View>
-            <ArrowRight size={16} color="#6C757D" />
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  );
-
-  const renderMyDocumentsTab = () => (
-    <View style={styles.tabContent}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {myDocuments.map((doc) => (
-          <TouchableOpacity key={doc.id} style={styles.documentCard}>
-            <View style={styles.documentHeader}>
-              <Text style={styles.documentTitle}>{doc.title}</Text>
-              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(doc.status) }]}>
-                <Text style={styles.statusText}>{getStatusText(doc.status)}</Text>
-              </View>
-            </View>
-            
-            <View style={styles.documentMeta}>
-              <View style={styles.metaItem}>
-                <Calendar size={14} color="#6C757D" />
-                <Text style={styles.metaText}>
-                  Creado: {new Date(doc.createdDate).toLocaleDateString('es-ES')}
-                </Text>
-              </View>
-              <View style={styles.metaItem}>
-                <User size={14} color="#6C757D" />
-                <Text style={styles.metaText}>
-                  Modificado: {new Date(doc.lastModified).toLocaleDateString('es-ES')}
-                </Text>
-              </View>
-            </View>
-            
-            <View style={styles.documentActions}>
-              <TouchableOpacity style={styles.actionButton}>
-                <Eye size={16} color="#003DA5" />
-                <Text style={styles.actionText}>{t('documents.preview')}</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.actionButton}>
-                <Download size={16} color="#28A745" />
-                <Text style={styles.actionText}>{t('documents.downloadPdf')}</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('documents.title')}</Text>
-        <TouchableOpacity style={styles.addButton}>
-          <Plus size={20} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'templates' && styles.activeTab]}
-          onPress={() => setActiveTab('templates')}
-        >
-          <Text style={[styles.tabText, activeTab === 'templates' && styles.activeTabText]}>
-            {t('documents.templates')}
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'myDocuments' && styles.activeTab]}
-          onPress={() => setActiveTab('myDocuments')}
-        >
-          <Text style={[styles.tabText, activeTab === 'myDocuments' && styles.activeTabText]}>
-            {t('documents.myDocuments')}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {activeTab === 'templates' ? renderTemplatesTab() : renderMyDocumentsTab()}
-
-      {/* Template Fill Modal */}
-      <Modal
-        visible={showTemplateModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>
-              {selectedTemplate && t(selectedTemplate.titleKey)}
-            </Text>
-            <TouchableOpacity
-              onPress={() => setShowTemplateModal(false)}
-              style={styles.closeButton}
-            >
-              <Text style={styles.closeButtonText}>{t('common.cancel')}</Text>
-            </TouchableOpacity>
+    <LinearGradient
+      colors={['#0f172a', '#1e3a8a', '#3b82f6']}
+      style={styles.container}
+    >
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <View style={styles.iconContainer}>
+              <FileText size={48} color="#f59e0b" strokeWidth={1.5} />
+              <Sparkles size={24} color="#fbbf24" style={styles.sparkle} />
+            </View>
+            <Text style={styles.title}>{t('docs.title')}</Text>
+            <Text style={styles.subtitle}>{t('docs.subtitle')}</Text>
           </View>
           
-          <ScrollView style={styles.modalContent}>
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Información Personal</Text>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Nombre Completo *</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Ingrese su nombre completo"
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>DUI *</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="00000000-0"
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Dirección *</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Dirección completa"
-                  multiline
-                  numberOfLines={3}
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Teléfono</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="0000-0000"
-                />
-              </View>
-            </View>
+          <Image
+            source={{ uri: 'https://images.pexels.com/photos/4427430/pexels-photo-4427430.jpeg?auto=compress&cs=tinysrgb&w=800' }}
+            style={styles.heroImage}
+          />
+        </View>
+
+        <View style={styles.content}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('docs.templates')}</Text>
             
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Detalles del Caso</Text>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Descripción del Caso *</Text>
-                <TextInput
-                  style={[styles.textInput, styles.textArea]}
-                  placeholder="Describa los hechos de manera clara y detallada"
-                  multiline
-                  numberOfLines={6}
-                  textAlignVertical="top"
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Monto Solicitado</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="$0.00"
-                  keyboardType="numeric"
-                />
-              </View>
+            <View style={styles.templatesContainer}>
+              {templates.map((template) => (
+                <TouchableOpacity
+                  key={template.id}
+                  style={styles.templateCard}
+                  onPress={() => handleGenerateDocument(template.id)}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['rgba(255, 255, 255, 0.95)', 'rgba(248, 250, 252, 0.95)']}
+                    style={styles.cardGradient}
+                  >
+                    <View style={styles.templateHeader}>
+                      <View style={[styles.templateIcon, { backgroundColor: template.color }]}>
+                        <FileText size={28} color="#ffffff" strokeWidth={2} />
+                      </View>
+                      <View style={styles.templateInfo}>
+                        <Text style={styles.templateTitle}>{template.title}</Text>
+                        <Text style={styles.templateDescription}>{template.description}</Text>
+                      </View>
+                      <ChevronRight size={24} color="#64748b" />
+                    </View>
+                    
+                    <View style={styles.fieldsList}>
+                      <Text style={styles.fieldsTitle}>Campos requeridos:</Text>
+                      {template.fields.slice(0, 3).map((field, index) => (
+                        <Text key={index} style={styles.fieldItem}>• {field.label}</Text>
+                      ))}
+                      {template.fields.length > 3 && (
+                        <Text style={styles.moreFields}>+{template.fields.length - 3} más...</Text>
+                      )}
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
             </View>
-          </ScrollView>
-          
-          <View style={styles.modalFooter}>
-            <TouchableOpacity style={styles.previewButton}>
-              <Eye size={16} color="#003DA5" />
-              <Text style={styles.previewButtonText}>{t('documents.preview')}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.saveButton}>
-              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
-            </TouchableOpacity>
           </View>
-        </SafeAreaView>
-      </Modal>
-    </SafeAreaView>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('docs.recent')}</Text>
+            
+            <View style={styles.documentsContainer}>
+              {recentDocuments.map((doc) => {
+                const StatusIcon = getStatusIcon(doc.status);
+                return (
+                  <TouchableOpacity 
+                    key={doc.id} 
+                    style={styles.documentCard}
+                    onPress={() => handleDownloadDocument(doc)}
+                  >
+                    <LinearGradient
+                      colors={['rgba(255, 255, 255, 0.95)', 'rgba(248, 250, 252, 0.95)']}
+                      style={styles.cardGradient}
+                    >
+                      <View style={styles.documentHeader}>
+                        <View style={styles.documentIcon}>
+                          <FileText size={24} color="#3b82f6" />
+                        </View>
+                        <View style={styles.documentInfo}>
+                          <Text style={styles.documentName}>{doc.name}</Text>
+                          <Text style={styles.documentDate}>{doc.date}</Text>
+                        </View>
+                        <View style={styles.documentStatus}>
+                          <View style={[
+                            styles.statusBadge,
+                            { backgroundColor: getStatusColor(doc.status) }
+                          ]}>
+                            <StatusIcon size={12} color="#ffffff" />
+                            <Text style={styles.statusText}>{doc.status}</Text>
+                          </View>
+                        </View>
+                      </View>
+                      
+                      <View style={styles.documentActions}>
+                        <TouchableOpacity 
+                          style={styles.actionButton}
+                          onPress={() => handleDownloadDocument(doc)}
+                        >
+                          <Download size={16} color="#64748b" />
+                          <Text style={styles.actionText}>{t('common.download')}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+  },
+  headerContent: {
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
+    marginBottom: 24,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontFamily: 'Inter-Bold',
-    color: '#212529',
-  },
-  addButton: {
-    backgroundColor: '#003DA5',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#003DA5',
-  },
-  tabText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Medium',
-    color: '#6C757D',
-  },
-  activeTabText: {
-    color: '#003DA5',
-  },
-  tabContent: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  iconContainer: {
+    position: 'relative',
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
+  sparkle: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+  },
+  title: {
+    fontSize: 32,
+    fontFamily: 'Inter-Bold',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
     fontFamily: 'Inter-Regular',
-    color: '#212529',
+    color: '#e2e8f0',
+    textAlign: 'center',
+    lineHeight: 26,
   },
-  filterButton: {
-    padding: 4,
+  heroImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 16,
+    opacity: 0.8,
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontFamily: 'Inter-SemiBold',
+    color: '#ffffff',
+    marginBottom: 16,
+  },
+  templatesContainer: {
+    gap: 16,
   },
   templateCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    borderLeftWidth: 4,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  cardGradient: {
+    padding: 20,
+  },
+  templateHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    marginBottom: 16,
   },
   templateIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  templateContent: {
+  templateInfo: {
     flex: 1,
   },
   templateTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#212529',
+    color: '#1e293b',
     marginBottom: 4,
   },
   templateDescription: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6C757D',
-    lineHeight: 20,
+    color: '#64748b',
+  },
+  fieldsList: {
+    backgroundColor: '#f8fafc',
+    padding: 16,
+    borderRadius: 12,
+  },
+  fieldsTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  fieldItem: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: '#64748b',
+    marginBottom: 2,
+  },
+  moreFields: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#3b82f6',
+    marginTop: 4,
+  },
+  documentsContainer: {
+    gap: 12,
   },
   documentCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    elevation: 2,
+    borderRadius: 16,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   documentHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  documentTitle: {
+  documentIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#dbeafe',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  documentInfo: {
     flex: 1,
+  },
+  documentName: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#212529',
-    marginRight: 8,
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  documentDate: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: '#64748b',
+  },
+  documentStatus: {
+    alignItems: 'flex-end',
   },
   statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 10,
     fontFamily: 'Inter-Medium',
-    color: '#FFFFFF',
-  },
-  documentMeta: {
-    marginBottom: 12,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  metaText: {
-    marginLeft: 6,
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#6C757D',
+    color: '#ffffff',
   },
   documentActions: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 8,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#f1f5f9',
   },
   actionText: {
-    marginLeft: 6,
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#003DA5',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#F8F9FA',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontFamily: 'Inter-Bold',
-    color: '#212529',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  closeButtonText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Medium',
-    color: '#6C757D',
-  },
-  modalContent: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-  },
-  formSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: 'Inter-SemiBold',
-    color: '#212529',
-    marginBottom: 16,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#495057',
-    marginBottom: 6,
-  },
-  textInput: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#212529',
-  },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
-  modalFooter: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#E9ECEF',
-    gap: 12,
-  },
-  previewButton: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#003DA5',
-    borderRadius: 8,
-  },
-  previewButtonText: {
-    marginLeft: 6,
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#003DA5',
-  },
-  saveButton: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#003DA5',
-    borderRadius: 8,
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#FFFFFF',
+    color: '#64748b',
   },
 });

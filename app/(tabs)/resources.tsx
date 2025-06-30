@@ -1,549 +1,494 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  TextInput,
-  Linking,
-  Alert,
-} from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  MapPin,
-  Phone,
-  Clock,
-  Search,
-  Filter,
-  Navigation,
-  Scale,
-  Users,
-  Heart,
-  Building,
-} from 'lucide-react-native';
-
-interface Resource {
-  id: string;
-  name: string;
-  type: 'court' | 'mediation' | 'proBono' | 'legalAid';
-  address: string;
-  phone: string;
-  hours: string;
-  services: string[];
-  department: string;
-  municipality: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-}
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Linking, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BookOpen, MapPin, Phone, Clock, ExternalLink, Search, Sparkles } from 'lucide-react-native';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ResourcesScreen() {
-  const { t } = useTranslation();
-  const [activeFilter, setActiveFilter] = useState<'all' | 'court' | 'mediation' | 'proBono' | 'legalAid'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState('courts');
 
-  const resources: Resource[] = [
+  const courts = [
     {
       id: '1',
-      name: 'Tribunal Primero de lo Civil de San Salvador',
-      type: 'court',
+      name: 'Juzgado 1° de Familia San Salvador',
       address: 'Centro de Gobierno, San Salvador',
-      phone: '2527-9200',
-      hours: 'Lunes a Viernes: 8:00 AM - 4:00 PM',
-      services: ['Demandas civiles', 'Divorcios', 'Sucesiones'],
-      department: 'San Salvador',
-      municipality: 'San Salvador',
-      coordinates: { lat: 13.6929, lng: -89.2182 },
+      phone: '2527-5000',
+      hours: 'Lunes a Viernes 8:00 AM - 4:00 PM',
+      distance: '2.5 km',
+      image: 'https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400'
+    },
+    {
+      id: '2',
+      name: 'Juzgado 2° de Familia San Salvador',
+      address: 'Centro de Gobierno, San Salvador',
+      phone: '2527-5001',
+      hours: 'Lunes a Viernes 8:00 AM - 4:00 PM',
+      distance: '2.5 km',
+      image: 'https://images.pexels.com/photos/5669602/pexels-photo-5669602.jpeg?auto=compress&cs=tinysrgb&w=400'
+    },
+    {
+      id: '3',
+      name: 'Juzgado de Paz Santa Tecla',
+      address: 'Santa Tecla, La Libertad',
+      phone: '2228-3000',
+      hours: 'Lunes a Viernes 7:30 AM - 3:30 PM',
+      distance: '15.2 km',
+      image: 'https://images.pexels.com/photos/5668772/pexels-photo-5668772.jpeg?auto=compress&cs=tinysrgb&w=400'
+    }
+  ];
+
+  const mediationCenters = [
+    {
+      id: '1',
+      name: 'Centro de Mediación FGR',
+      address: 'San Salvador Centro',
+      phone: '2231-0000',
+      hours: 'Lunes a Viernes 8:00 AM - 5:00 PM',
+      distance: '1.8 km',
+      image: 'https://images.pexels.com/photos/5669619/pexels-photo-5669619.jpeg?auto=compress&cs=tinysrgb&w=400'
     },
     {
       id: '2',
       name: 'Centro de Mediación Familiar',
-      type: 'mediation',
-      address: '25 Av. Norte, San Salvador',
-      phone: '2221-3456',
-      hours: 'Lunes a Viernes: 8:00 AM - 5:00 PM',
-      services: ['Mediación familiar', 'Pensión alimenticia', 'Custodia'],
-      department: 'San Salvador',
-      municipality: 'San Salvador',
-      coordinates: { lat: 13.7007, lng: -89.2076 },
+      address: 'Col. Escalón, San Salvador',
+      phone: '2264-5000',
+      hours: 'Lunes a Viernes 8:00 AM - 4:00 PM',
+      distance: '5.3 km',
+      image: 'https://images.pexels.com/photos/5669602/pexels-photo-5669602.jpeg?auto=compress&cs=tinysrgb&w=400'
+    }
+  ];
+
+  const proBonoClinics = [
+    {
+      id: '1',
+      name: 'Clínica Jurídica UCA',
+      address: 'Universidad Centroamericana',
+      phone: '2210-6600',
+      hours: 'Martes y Jueves 2:00 PM - 5:00 PM',
+      distance: '8.1 km',
+      image: 'https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400'
+    },
+    {
+      id: '2',
+      name: 'Fundación de Estudios para la Aplicación del Derecho',
+      address: 'Col. San Benito, San Salvador',
+      phone: '2264-0505',
+      hours: 'Lunes a Viernes 8:00 AM - 5:00 PM',
+      distance: '4.7 km',
+      image: 'https://images.pexels.com/photos/5669619/pexels-photo-5669619.jpeg?auto=compress&cs=tinysrgb&w=400'
+    }
+  ];
+
+  const libraryTopics = [
+    {
+      id: '1',
+      title: 'Derecho de Familia',
+      subtitle: 'Divorcio, alimentos, custodia',
+      icon: '👨‍👩‍👧‍👦',
+      articles: 15,
+      image: 'https://images.pexels.com/photos/5668772/pexels-photo-5668772.jpeg?auto=compress&cs=tinysrgb&w=400'
+    },
+    {
+      id: '2',
+      title: 'Derecho Laboral',
+      subtitle: 'Despidos, indemnizaciones, derechos',
+      icon: '👷',
+      articles: 12,
+      image: 'https://images.pexels.com/photos/5669602/pexels-photo-5669602.jpeg?auto=compress&cs=tinysrgb&w=400'
     },
     {
       id: '3',
-      name: 'Procuraduría para la Defensa de los Derechos Humanos',
-      type: 'legalAid',
-      address: '9a Av. Norte y 5a Calle Poniente, San Salvador',
-      phone: '2525-5000',
-      hours: 'Lunes a Viernes: 8:00 AM - 4:30 PM',
-      services: ['Asesoría legal gratuita', 'Derechos humanos', 'Violencia doméstica'],
-      department: 'San Salvador',
-      municipality: 'San Salvador',
-      coordinates: { lat: 13.6988, lng: -89.2077 },
+      title: 'Derecho Civil',
+      subtitle: 'Contratos, propiedades, obligaciones',
+      icon: '📜',
+      articles: 18,
+      image: 'https://images.pexels.com/photos/5669619/pexels-photo-5669619.jpeg?auto=compress&cs=tinysrgb&w=400'
     },
     {
       id: '4',
-      name: 'Fundación de Estudios para la Aplicación del Derecho',
-      type: 'proBono',
-      address: 'Col. Escalón, San Salvador',
-      phone: '2264-0404',
-      hours: 'Lunes a Viernes: 8:00 AM - 5:00 PM',
-      services: ['Asesoría legal pro bono', 'Casos civiles', 'Derechos laborales'],
-      department: 'San Salvador',
-      municipality: 'San Salvador',
-      coordinates: { lat: 13.7073, lng: -89.2182 },
-    },
-    {
-      id: '5',
-      name: 'Juzgado de Paz de Santa Tecla',
-      type: 'court',
-      address: 'Santa Tecla, La Libertad',
-      phone: '2228-1234',
-      hours: 'Lunes a Viernes: 8:00 AM - 4:00 PM',
-      services: ['Casos menores', 'Conciliación', 'Faltas'],
-      department: 'La Libertad',
-      municipality: 'Santa Tecla',
-      coordinates: { lat: 13.6767, lng: -89.2797 },
-    },
+      title: 'Procedimientos Judiciales',
+      subtitle: 'Cómo presentar demandas y recursos',
+      icon: '⚖️',
+      articles: 20,
+      image: 'https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400'
+    }
   ];
 
-  const getResourceIcon = (type: string) => {
-    switch (type) {
-      case 'court':
-        return <Scale size={20} color="#003DA5" />;
-      case 'mediation':
-        return <Users size={20} color="#28A745" />;
-      case 'proBono':
-        return <Heart size={20} color="#DC3545" />;
-      case 'legalAid':
-        return <Building size={20} color="#6C5CE7" />;
-      default:
-        return <MapPin size={20} color="#6C757D" />;
+  const tabs = [
+    { id: 'courts', title: t('resources.courts'), icon: MapPin },
+    { id: 'mediation', title: t('resources.mediation'), icon: Search },
+    { id: 'probono', title: t('resources.probono'), icon: BookOpen },
+    { id: 'library', title: t('resources.library'), icon: BookOpen }
+  ];
+
+  const getCurrentData = () => {
+    switch (activeTab) {
+      case 'courts': return courts;
+      case 'mediation': return mediationCenters;
+      case 'probono': return proBonoClinics;
+      case 'library': return libraryTopics;
+      default: return [];
     }
   };
-
-  const getResourceTypeText = (type: string) => {
-    switch (type) {
-      case 'court':
-        return t('resources.courts');
-      case 'mediation':
-        return t('resources.mediationCenters');
-      case 'proBono':
-        return t('resources.proBono');
-      case 'legalAid':
-        return t('resources.legalAid');
-      default:
-        return type;
-    }
-  };
-
-  const getResourceColor = (type: string) => {
-    switch (type) {
-      case 'court':
-        return '#003DA5';
-      case 'mediation':
-        return '#28A745';
-      case 'proBono':
-        return '#DC3545';
-      case 'legalAid':
-        return '#6C5CE7';
-      default:
-        return '#6C757D';
-    }
-  };
-
-  const filteredResources = resources.filter(resource => {
-    const matchesFilter = activeFilter === 'all' || resource.type === activeFilter;
-    const matchesSearch = resource.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         resource.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         resource.services.some(service => 
-                           service.toLowerCase().includes(searchQuery.toLowerCase())
-                         );
-    return matchesFilter && matchesSearch;
-  });
 
   const handleCall = (phone: string) => {
-    const phoneUrl = `tel:${phone}`;
-    Linking.canOpenURL(phoneUrl).then(supported => {
-      if (supported) {
-        Linking.openURL(phoneUrl);
-      } else {
-        Alert.alert('Error', 'No se puede realizar la llamada');
-      }
-    });
+    Linking.openURL(`tel:${phone}`);
   };
 
-  const handleGetDirections = (resource: Resource) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${resource.coordinates.lat},${resource.coordinates.lng}`;
-    Linking.canOpenURL(url).then(supported => {
-      if (supported) {
-        Linking.openURL(url);
-      } else {
-        Alert.alert('Error', 'No se puede abrir el mapa');
-      }
-    });
+  const handleDirections = (address: string) => {
+    const encodedAddress = encodeURIComponent(address);
+    Linking.openURL(`https://maps.google.com/?q=${encodedAddress}`);
   };
 
-  const filterButtons = [
-    { key: 'all', label: 'Todos', count: resources.length },
-    { key: 'court', label: 'Tribunales', count: resources.filter(r => r.type === 'court').length },
-    { key: 'mediation', label: 'Mediación', count: resources.filter(r => r.type === 'mediation').length },
-    { key: 'proBono', label: 'Pro Bono', count: resources.filter(r => r.type === 'proBono').length },
-    { key: 'legalAid', label: 'Asistencia', count: resources.filter(r => r.type === 'legalAid').length },
-  ];
+  const renderLocationCard = (item: any) => (
+    <View key={item.id} style={styles.resourceCard}>
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.95)', 'rgba(248, 250, 252, 0.95)']}
+        style={styles.cardGradient}
+      >
+        <View style={styles.cardImageContainer}>
+          <Image source={{ uri: item.image }} style={styles.cardImage} />
+          <View style={styles.distanceBadge}>
+            <Text style={styles.distanceText}>{item.distance}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>{item.name}</Text>
+          <View style={styles.cardDetail}>
+            <MapPin size={14} color="#64748b" />
+            <Text style={styles.cardAddress}>{item.address}</Text>
+          </View>
+          <View style={styles.cardDetail}>
+            <Clock size={14} color="#64748b" />
+            <Text style={styles.cardHours}>{item.hours}</Text>
+          </View>
+          
+          <View style={styles.cardActions}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleCall(item.phone)}
+            >
+              <Phone size={16} color="#ffffff" />
+              <Text style={styles.actionButtonText}>{t('resources.call')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.secondaryButton]}
+              onPress={() => handleDirections(item.address)}
+            >
+              <ExternalLink size={16} color="#3b82f6" />
+              <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>{t('resources.directions')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+
+  const renderLibraryCard = (item: any) => (
+    <TouchableOpacity key={item.id} style={styles.libraryCard}>
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.95)', 'rgba(248, 250, 252, 0.95)']}
+        style={styles.cardGradient}
+      >
+        <View style={styles.libraryCardContent}>
+          <Image source={{ uri: item.image }} style={styles.libraryImage} />
+          <View style={styles.libraryInfo}>
+            <View style={styles.libraryHeader}>
+              <Text style={styles.libraryEmoji}>{item.icon}</Text>
+              <Text style={styles.libraryTitle}>{item.title}</Text>
+            </View>
+            <Text style={styles.librarySubtitle}>{item.subtitle}</Text>
+            <Text style={styles.libraryCount}>{item.articles} artículos disponibles</Text>
+          </View>
+          <ExternalLink size={20} color="#64748b" />
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+      colors={['#0f172a', '#1e3a8a', '#3b82f6']}
+      style={styles.container}
+    >
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('resources.title')}</Text>
-      </View>
-
-      {/* Search Bar */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchBar}>
-          <Search size={20} color="#6C757D" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar recursos..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-      </View>
-
-      {/* Filter Buttons */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterScrollView}
-        contentContainerStyle={styles.filterContainer}
-      >
-        {filterButtons.map((filter) => (
-          <TouchableOpacity
-            key={filter.key}
-            style={[
-              styles.filterButton,
-              activeFilter === filter.key && styles.activeFilterButton
-            ]}
-            onPress={() => setActiveFilter(filter.key as any)}
-          >
-            <Text style={[
-              styles.filterButtonText,
-              activeFilter === filter.key && styles.activeFilterButtonText
-            ]}>
-              {filter.label}
-            </Text>
-            <View style={[
-              styles.filterBadge,
-              activeFilter === filter.key && styles.activeFilterBadge
-            ]}>
-              <Text style={[
-                styles.filterBadgeText,
-                activeFilter === filter.key && styles.activeFilterBadgeText
-              ]}>
-                {filter.count}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Resources List */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {filteredResources.length === 0 ? (
-          <View style={styles.emptyState}>
-            <MapPin size={48} color="#6C757D" />
-            <Text style={styles.emptyStateText}>
-              No se encontraron recursos
-            </Text>
-            <Text style={styles.emptyStateSubtext}>
-              Intenta con otros términos de búsqueda
-            </Text>
+        <View style={styles.headerContent}>
+          <View style={styles.iconContainer}>
+            <BookOpen size={48} color="#f59e0b" strokeWidth={1.5} />
+            <Sparkles size={24} color="#fbbf24" style={styles.sparkle} />
           </View>
-        ) : (
-          filteredResources.map((resource) => (
-            <View key={resource.id} style={styles.resourceCard}>
-              <View style={styles.resourceHeader}>
-                <View style={styles.resourceTypeSection}>
-                  <View style={[styles.resourceIcon, { backgroundColor: getResourceColor(resource.type) }]}>
-                    {getResourceIcon(resource.type)}
-                  </View>
-                  <Text style={[styles.resourceType, { color: getResourceColor(resource.type) }]}>
-                    {getResourceTypeText(resource.type)}
+          <Text style={styles.title}>{t('resources.title')}</Text>
+          <Text style={styles.subtitle}>{t('resources.subtitle')}</Text>
+        </View>
+        
+        <Image
+          source={{ uri: 'https://images.pexels.com/photos/5668772/pexels-photo-5668772.jpeg?auto=compress&cs=tinysrgb&w=800' }}
+          style={styles.heroImage}
+        />
+      </View>
+
+      <View style={styles.content}>
+        <View style={styles.tabsContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {tabs.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <TouchableOpacity
+                  key={tab.id}
+                  style={[
+                    styles.tab,
+                    activeTab === tab.id && styles.activeTab
+                  ]}
+                  onPress={() => setActiveTab(tab.id)}
+                >
+                  <IconComponent
+                    size={20}
+                    color={activeTab === tab.id ? '#ffffff' : '#64748b'}
+                  />
+                  <Text style={[
+                    styles.tabText,
+                    activeTab === tab.id && styles.activeTabText
+                  ]}>
+                    {tab.title}
                   </Text>
-                </View>
-              </View>
-              
-              <Text style={styles.resourceName}>{resource.name}</Text>
-              
-              <View style={styles.resourceInfo}>
-                <View style={styles.infoRow}>
-                  <MapPin size={16} color="#6C757D" />
-                  <Text style={styles.infoText}>{resource.address}</Text>
-                </View>
-                
-                <View style={styles.infoRow}>
-                  <Phone size={16} color="#6C757D" />
-                  <Text style={styles.infoText}>{resource.phone}</Text>
-                </View>
-                
-                <View style={styles.infoRow}>
-                  <Clock size={16} color="#6C757D" />
-                  <Text style={styles.infoText}>{resource.hours}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.servicesSection}>
-                <Text style={styles.servicesTitle}>{t('resources.services')}:</Text>
-                <View style={styles.servicesTags}>
-                  {resource.services.map((service, index) => (
-                    <View key={index} style={styles.serviceTag}>
-                      <Text style={styles.serviceTagText}>{service}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-              
-              <View style={styles.resourceActions}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => handleCall(resource.phone)}
-                >
-                  <Phone size={16} color="#28A745" />
-                  <Text style={styles.actionButtonText}>Llamar</Text>
                 </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => handleGetDirections(resource)}
-                >
-                  <Navigation size={16} color="#003DA5" />
-                  <Text style={styles.actionButtonText}>Direcciones</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))
-        )}
-      </ScrollView>
-    </SafeAreaView>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        <ScrollView style={styles.resourcesContainer} showsVerticalScrollIndicator={false}>
+          {activeTab === 'library' 
+            ? getCurrentData().map(renderLibraryCard)
+            : getCurrentData().map(renderLocationCard)
+          }
+        </ScrollView>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontFamily: 'Inter-Bold',
-    color: '#212529',
-  },
-  searchSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  searchBar: {
-    flexDirection: 'row',
+  headerContent: {
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
+    marginBottom: 24,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
+  iconContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  sparkle: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+  },
+  title: {
+    fontSize: 32,
+    fontFamily: 'Inter-Bold',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
     fontFamily: 'Inter-Regular',
-    color: '#212529',
+    color: '#e2e8f0',
+    textAlign: 'center',
+    lineHeight: 26,
   },
-  filterScrollView: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
-  },
-  filterContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-  },
-  activeFilterButton: {
-    backgroundColor: '#003DA5',
-    borderColor: '#003DA5',
-  },
-  filterButtonText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#6C757D',
-    marginRight: 6,
-  },
-  activeFilterButtonText: {
-    color: '#FFFFFF',
-  },
-  filterBadge: {
-    backgroundColor: '#E9ECEF',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activeFilterBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  filterBadgeText: {
-    fontSize: 12,
-    fontFamily: 'Inter-Bold',
-    color: '#6C757D',
-  },
-  activeFilterBadgeText: {
-    color: '#FFFFFF',
+  heroImage: {
+    width: '100%',
+    height: 160,
+    borderRadius: 16,
+    opacity: 0.8,
   },
   content: {
     flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  tabsContainer: {
+    paddingVertical: 20,
     paddingHorizontal: 20,
-    paddingTop: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  tab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginRight: 12,
+    borderRadius: 20,
+    backgroundColor: '#f1f5f9',
+  },
+  activeTab: {
+    backgroundColor: '#f59e0b',
+    shadowColor: '#f59e0b',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  tabText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: '#64748b',
+  },
+  activeTabText: {
+    color: '#ffffff',
+  },
+  resourcesContainer: {
+    flex: 1,
+    padding: 20,
   },
   resourceCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  resourceHeader: {
-    marginBottom: 8,
+  cardGradient: {
+    padding: 0,
   },
-  resourceTypeSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  cardImageContainer: {
+    position: 'relative',
+    height: 120,
   },
-  resourceIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
+  cardImage: {
+    width: '100%',
+    height: '100%',
   },
-  resourceType: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-  },
-  resourceName: {
-    fontSize: 18,
-    fontFamily: 'Inter-Bold',
-    color: '#212529',
-    marginBottom: 12,
-  },
-  resourceInfo: {
-    marginBottom: 16,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  infoText: {
-    marginLeft: 8,
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#495057',
-    flex: 1,
-  },
-  servicesSection: {
-    marginBottom: 16,
-  },
-  servicesTitle: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#495057',
-    marginBottom: 8,
-  },
-  servicesTags: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  serviceTag: {
-    backgroundColor: '#F8F9FA',
+  distanceBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.9)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
   },
-  serviceTagText: {
+  distanceText: {
     fontSize: 12,
-    fontFamily: 'Inter-Medium',
-    color: '#6C757D',
+    fontFamily: 'Inter-SemiBold',
+    color: '#ffffff',
   },
-  resourceActions: {
+  cardContent: {
+    padding: 20,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1e293b',
+    marginBottom: 12,
+  },
+  cardDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  cardAddress: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#64748b',
+    flex: 1,
+  },
+  cardHours: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: '#64748b',
+    flex: 1,
+  },
+  cardActions: {
     flexDirection: 'row',
     gap: 12,
+    marginTop: 16,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#f59e0b',
+  },
+  secondaryButton: {
+    backgroundColor: '#dbeafe',
   },
   actionButtonText: {
-    marginLeft: 6,
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
-    color: '#495057',
+    color: '#ffffff',
   },
-  emptyState: {
+  secondaryButtonText: {
+    color: '#3b82f6',
+  },
+  libraryCard: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  libraryCardContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 48,
+    padding: 20,
   },
-  emptyStateText: {
-    marginTop: 16,
+  libraryImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    marginRight: 16,
+  },
+  libraryInfo: {
+    flex: 1,
+  },
+  libraryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  libraryEmoji: {
+    fontSize: 20,
+  },
+  libraryTitle: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
-    color: '#495057',
-    textAlign: 'center',
+    color: '#1e293b',
   },
-  emptyStateSubtext: {
-    marginTop: 8,
+  librarySubtitle: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6C757D',
-    textAlign: 'center',
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  libraryCount: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#3b82f6',
   },
 });

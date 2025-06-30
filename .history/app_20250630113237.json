@@ -1,4 +1,4 @@
-{
+
   "expo": {
     "name": "bolt-expo-nativewind",
     "slug": "bolt-expo-nativewind",
@@ -29,6 +29,17 @@
     ],
     "experiments": {
       "typedRoutes": true
+=======
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.anonymous.minervalegalaid"
+    },
+    "ios": {
+      "bundleIdentifier": "com.anonymous.minervalegalaid"
+>>>>>>> 7a920f6992e8b6a1375651dc09e75ec8e6fcfd92
     }
   }
 }

@@ -1,52 +1,54 @@
 import { Tabs } from 'expo-router';
-import { Home, Scale, FileText, Calendar, BookOpen, MapPin } from 'lucide-react-native';
-import { useTranslation } from 'react-i18next';
+import { Platform } from 'react-native';
+import { Wand as Wand2, FileText, Calendar, MessageSquare, BookOpen } from 'lucide-react-native';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function TabLayout() {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
 
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#003DA5',
-        tabBarInactiveTintColor: '#6C757D',
+        tabBarActiveTintColor: '#f59e0b',
+        tabBarInactiveTintColor: '#64748b',
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E9ECEF',
+          backgroundColor: '#ffffff',
+          borderTopColor: '#e2e8f0',
           borderTopWidth: 1,
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 65,
+          height: Platform.OS === 'ios' ? 88 : 68,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+          paddingTop: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 8,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontFamily: 'Inter-Medium',
-          marginTop: 2,
+        },
+        headerStyle: {
+          backgroundColor: '#1e3a8a',
+        },
+        headerTintColor: '#ffffff',
+        headerTitleStyle: {
+          fontFamily: 'Inter-SemiBold',
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: t('navigation.home'),
+          title: t('nav.wizard'),
           tabBarIcon: ({ size, color }) => (
-            <Home size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="cases"
-        options={{
-          title: t('navigation.cases'),
-          tabBarIcon: ({ size, color }) => (
-            <Scale size={size} color={color} />
+            <Wand2 size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="documents"
         options={{
-          title: t('navigation.documents'),
+          title: t('nav.documents'),
           tabBarIcon: ({ size, color }) => (
             <FileText size={size} color={color} />
           ),
@@ -55,27 +57,27 @@ export default function TabLayout() {
       <Tabs.Screen
         name="deadlines"
         options={{
-          title: t('navigation.deadlines'),
+          title: t('nav.deadlines'),
           tabBarIcon: ({ size, color }) => (
             <Calendar size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="learn"
+        name="chat"
         options={{
-          title: t('navigation.learn'),
+          title: t('nav.chat'),
           tabBarIcon: ({ size, color }) => (
-            <BookOpen size={size} color={color} />
+            <MessageSquare size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="resources"
         options={{
-          title: t('navigation.resources'),
+          title: t('nav.resources'),
           tabBarIcon: ({ size, color }) => (
-            <MapPin size={size} color={color} />
+            <BookOpen size={size} color={color} />
           ),
         }}
       />
