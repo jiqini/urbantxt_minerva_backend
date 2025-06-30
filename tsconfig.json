@@ -12,5 +12,6 @@
     "**/*.ts",
     "**/*.tsx",
     "nativewind-env.d.ts"
-  ]
+, "utils/vectorize_pdfs.js"  ]
 }
+
