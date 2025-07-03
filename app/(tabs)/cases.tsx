@@ -8,7 +8,7 @@ import {
   TextInput,
   Modal,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Plus,
@@ -39,7 +39,7 @@ interface Case {
 }
 
 export default function CasesScreen() {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const [showWizard, setShowWizard] = useState(false);
   const [selectedCaseType, setSelectedCaseType] = useState<string | null>(null);
   const [caseDescription, setCaseDescription] = useState('');

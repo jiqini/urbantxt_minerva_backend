@@ -8,7 +8,7 @@ import {
   Modal,
   Image,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   BookOpen,
@@ -44,7 +44,7 @@ interface Article {
 }
 
 export default function LearnScreen() {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'categories' | 'recent' | 'favorites'>('categories');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [showArticleModal, setShowArticleModal] = useState(false);
