@@ -10,16 +10,7 @@ import {
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  Plus,
-  Scale,
-  Calendar,
-  Clock,
-  ArrowRight,
-  X,
-  AlertCircle,
-  CheckCircle,
-} from 'lucide-react-native';
+import { Plus, Scale, Calendar, Clock, ArrowRight, X, CircleAlert as AlertCircle, CircleCheck as CheckCircle } from 'lucide-react-native';
 
 interface CaseOption {
   id: string;
