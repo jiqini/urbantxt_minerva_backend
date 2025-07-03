@@ -7,30 +7,54 @@ import {
   StyleSheet,
   TextInput,
   Modal,
+  Dimensions,
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Scale, Calendar, Clock, ArrowRight, X, CircleAlert as AlertCircle, CircleCheck as CheckCircle } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  Plus,
+  Scale,
+  Calendar,
+  Clock,
+  ArrowRight,
+  X,
+  CircleAlert as AlertCircle,
+  CircleCheck as CheckCircle,
+  Sparkles,
+  FileText,
+  Users,
+  Briefcase,
+  Home,
+  Gavel,
+} from 'lucide-react-native';
+
+const { width } = Dimensions.get('window');
 
 interface CaseOption {
   id: string;
   titleKey: string;
   icon: React.ReactNode;
   color: string;
+  gradient: string[];
 }
 
 interface Case {
   id: string;
   title: string;
   type: string;
-  status: 'active' | 'pending' | 'completed';
+  status: 'active' | 'pending' | 'completed' | 'urgent';
   deadline: string;
   daysLeft: number;
   description: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  progress: number;
 }
 
 export default function CasesScreen() {
   const { t } = useLanguage();
+  const { colors, isDark } = useTheme();
   const [showWizard, setShowWizard] = useState(false);
   const [selectedCaseType, setSelectedCaseType] = useState<string | null>(null);
   const [caseDescription, setCaseDescription] = useState('');
@@ -40,44 +64,51 @@ export default function CasesScreen() {
     {
       id: 'sued',
       titleKey: 'cases.options.sued',
-      icon: <AlertCircle size={20} color="#DC3545" />,
+      icon: <AlertCircle size={24} color="#ffffff" />,
       color: '#DC3545',
+      gradient: ['#DC3545', '#C82333'],
     },
     {
       id: 'wantToSue',
       titleKey: 'cases.options.wantToSue',
-      icon: <Scale size={20} color="#003DA5" />,
+      icon: <Scale size={24} color="#ffffff" />,
       color: '#003DA5',
+      gradient: ['#003DA5', '#0056b3'],
     },
     {
       id: 'divorce',
       titleKey: 'cases.options.divorce',
-      icon: <Scale size={20} color="#6C5CE7" />,
+      icon: <Users size={24} color="#ffffff" />,
       color: '#6C5CE7',
+      gradient: ['#6C5CE7', '#5A4FCF'],
     },
     {
       id: 'childSupport',
       titleKey: 'cases.options.childSupport',
-      icon: <Scale size={20} color="#28A745" />,
+      icon: <Users size={24} color="#ffffff" />,
       color: '#28A745',
+      gradient: ['#28A745', '#218838'],
     },
     {
       id: 'laborDispute',
       titleKey: 'cases.options.laborDispute',
-      icon: <Scale size={20} color="#FF6B35" />,
+      icon: <Briefcase size={24} color="#ffffff" />,
       color: '#FF6B35',
+      gradient: ['#FF6B35', '#E55A2B'],
     },
     {
       id: 'propertyDispute',
       titleKey: 'cases.options.propertyDispute',
-      icon: <Scale size={20} color="#FFC107" />,
+      icon: <Home size={24} color="#ffffff" />,
       color: '#FFC107',
+      gradient: ['#FFC107', '#E0A800'],
     },
     {
       id: 'other',
       titleKey: 'cases.options.other',
-      icon: <Scale size={20} color="#6C757D" />,
+      icon: <Gavel size={24} color="#ffffff" />,
       color: '#6C757D',
+      gradient: ['#6C757D', '#5A6268'],
     },
   ];
 
@@ -86,19 +117,23 @@ export default function CasesScreen() {
       id: '1',
       title: 'Demanda por Pensión Alimenticia',
       type: 'childSupport',
-      status: 'active',
+      status: 'urgent',
       deadline: '2025-01-20',
       daysLeft: 5,
       description: 'Solicitud de pensión alimenticia para menor de edad',
+      priority: 'urgent',
+      progress: 75,
     },
     {
       id: '2',
       title: 'Contestación de Demanda Laboral',
       type: 'laborDispute',
-      status: 'pending',
+      status: 'active',
       deadline: '2025-01-15',
       daysLeft: -2,
       description: 'Respuesta a demanda por despido injustificado',
+      priority: 'high',
+      progress: 45,
     },
     {
       id: '3',
@@ -108,32 +143,49 @@ export default function CasesScreen() {
       deadline: '2024-12-30',
       daysLeft: 0,
       description: 'Proceso de divorcio completado exitosamente',
+      priority: 'medium',
+      progress: 100,
+    },
+    {
+      id: '4',
+      title: 'Disputa de Propiedad',
+      type: 'propertyDispute',
+      status: 'pending',
+      deadline: '2025-02-15',
+      daysLeft: 30,
+      description: 'Conflicto sobre límites de propiedad',
+      priority: 'medium',
+      progress: 20,
     },
   ];
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, priority: string) => {
+    if (priority === 'urgent') return '#DC3545';
     switch (status) {
       case 'active':
-        return '#28A745';
+        return colors.info;
       case 'pending':
-        return '#FFC107';
+        return colors.warning;
       case 'completed':
-        return '#6C757D';
+        return colors.success;
+      case 'urgent':
+        return colors.error;
       default:
-        return '#6C757D';
+        return colors.textSecondary;
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string, priority: string) => {
+    if (priority === 'urgent') return AlertCircle;
     switch (status) {
       case 'active':
-        return <Clock size={16} color="#28A745" />;
+        return Clock;
       case 'pending':
-        return <AlertCircle size={16} color="#FFC107" />;
+        return AlertCircle;
       case 'completed':
-        return <CheckCircle size={16} color="#6C757D" />;
+        return CheckCircle;
       default:
-        return <Clock size={16} color="#6C757D" />;
+        return Clock;
     }
   };
 
@@ -146,7 +198,6 @@ export default function CasesScreen() {
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Save case logic here
       setShowWizard(false);
       setStep(1);
       setSelectedCaseType(null);
@@ -159,23 +210,31 @@ export default function CasesScreen() {
       case 1:
         return (
           <View>
-            <Text style={styles.wizardTitle}>{t('cases.whatHappened')}</Text>
+            <Text style={[styles.wizardTitle, { color: colors.text }]}>
+              {t('cases.whatHappened')}
+            </Text>
             <View style={styles.optionsGrid}>
               {caseOptions.map((option) => (
                 <TouchableOpacity
                   key={option.id}
                   style={[
                     styles.optionCard,
-                    { borderLeftColor: option.color },
-                    selectedCaseType === option.id && styles.optionCardSelected
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                    selectedCaseType === option.id && { borderColor: option.color, borderWidth: 2 }
                   ]}
                   onPress={() => handleCaseTypeSelect(option.id)}
+                  activeOpacity={0.8}
                 >
-                  <View style={[styles.optionIcon, { backgroundColor: option.color }]}>
+                  <LinearGradient
+                    colors={option.gradient}
+                    style={styles.optionIcon}
+                  >
                     {option.icon}
-                  </View>
-                  <Text style={styles.optionText}>{t(option.titleKey)}</Text>
-                  <ArrowRight size={16} color="#6C757D" />
+                  </LinearGradient>
+                  <Text style={[styles.optionText, { color: colors.text }]}>
+                    {t(option.titleKey)}
+                  </Text>
+                  <ArrowRight size={16} color={colors.textSecondary} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -185,12 +244,22 @@ export default function CasesScreen() {
       case 2:
         return (
           <View>
-            <Text style={styles.wizardTitle}>{t('cases.tellMore')}</Text>
+            <Text style={[styles.wizardTitle, { color: colors.text }]}>
+              {t('cases.tellMore')}
+            </Text>
             <TextInput
-              style={styles.textArea}
+              style={[
+                styles.textArea,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                }
+              ]}
               value={caseDescription}
               onChangeText={setCaseDescription}
               placeholder="Describa los detalles de su caso..."
+              placeholderTextColor={colors.textSecondary}
               multiline
               numberOfLines={6}
               textAlignVertical="top"
@@ -201,18 +270,28 @@ export default function CasesScreen() {
       case 3:
         return (
           <View>
-            <Text style={styles.wizardTitle}>Resumen del Caso</Text>
-            <View style={styles.summaryCard}>
-              <Text style={styles.summaryLabel}>Tipo de Caso:</Text>
-              <Text style={styles.summaryValue}>
+            <Text style={[styles.wizardTitle, { color: colors.text }]}>
+              Resumen del Caso
+            </Text>
+            <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                Tipo de Caso:
+              </Text>
+              <Text style={[styles.summaryValue, { color: colors.text }]}>
                 {selectedCaseType && t(`cases.options.${selectedCaseType}`)}
               </Text>
               
-              <Text style={styles.summaryLabel}>Descripción:</Text>
-              <Text style={styles.summaryValue}>{caseDescription}</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                Descripción:
+              </Text>
+              <Text style={[styles.summaryValue, { color: colors.text }]}>
+                {caseDescription}
+              </Text>
               
-              <Text style={styles.summaryLabel}>Próximos Pasos:</Text>
-              <Text style={styles.summaryValue}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                Próximos Pasos:
+              </Text>
+              <Text style={[styles.summaryValue, { color: colors.text }]}>
                 1. Revisar documentos necesarios{'\n'}
                 2. Completar formularios requeridos{'\n'}
                 3. Establecer fechas límite importantes
@@ -226,55 +305,152 @@ export default function CasesScreen() {
     }
   };
 
+  const dynamicStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    headerTitle: {
+      fontSize: 28,
+      fontFamily: 'Inter-Bold',
+      color: colors.text,
+    },
+    addButton: {
+      backgroundColor: colors.primary,
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 6,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: 20,
+      paddingTop: 16,
+    },
+    caseCard: {
+      backgroundColor: colors.surface,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+  });
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('cases.title')}</Text>
+    <SafeAreaView style={dynamicStyles.container}>
+      <View style={dynamicStyles.header}>
+        <View style={styles.headerContent}>
+          <View style={styles.iconContainer}>
+            <Scale size={32} color={colors.primary} />
+            <Sparkles size={16} color={colors.secondary} style={styles.sparkle} />
+          </View>
+          <Text style={dynamicStyles.headerTitle}>{t('cases.title')}</Text>
+        </View>
         <TouchableOpacity
-          style={styles.addButton}
+          style={dynamicStyles.addButton}
           onPress={() => setShowWizard(true)}
+          activeOpacity={0.8}
         >
-          <Plus size={20} color="#FFFFFF" />
+          <Plus size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {mockCases.map((caseItem) => (
-          <TouchableOpacity key={caseItem.id} style={styles.caseCard}>
-            <View style={styles.caseHeader}>
-              <View style={styles.caseStatus}>
-                {getStatusIcon(caseItem.status)}
-                <Text style={[styles.statusText, { color: getStatusColor(caseItem.status) }]}>
-                  {t(`cases.${caseItem.status}`)}
-                </Text>
-              </View>
-              {caseItem.daysLeft > 0 && (
-                <View style={styles.deadlineBadge}>
-                  <Calendar size={12} color="#DC3545" />
-                  <Text style={styles.deadlineText}>
-                    {caseItem.daysLeft} {t('deadlines.daysLeft')}
+      <ScrollView style={dynamicStyles.content} showsVerticalScrollIndicator={false}>
+        {mockCases.map((caseItem) => {
+          const StatusIcon = getStatusIcon(caseItem.status, caseItem.priority);
+          const statusColor = getStatusColor(caseItem.status, caseItem.priority);
+          
+          return (
+            <TouchableOpacity key={caseItem.id} style={dynamicStyles.caseCard} activeOpacity={0.8}>
+              <View style={styles.caseHeader}>
+                <View style={styles.caseStatus}>
+                  <StatusIcon size={16} color={statusColor} />
+                  <Text style={[styles.statusText, { color: statusColor }]}>
+                    {t(`cases.${caseItem.status}`)}
                   </Text>
                 </View>
-              )}
-              {caseItem.daysLeft < 0 && (
-                <View style={[styles.deadlineBadge, styles.overdueBadge]}>
-                  <AlertCircle size={12} color="#FFFFFF" />
-                  <Text style={styles.overdueText}>Vencido</Text>
-                </View>
-              )}
-            </View>
-            
-            <Text style={styles.caseTitle}>{caseItem.title}</Text>
-            <Text style={styles.caseDescription}>{caseItem.description}</Text>
-            
-            <View style={styles.caseFooter}>
-              <Text style={styles.deadlineLabel}>
-                {t('cases.deadline')}: {new Date(caseItem.deadline).toLocaleDateString('es-ES')}
+                {caseItem.daysLeft > 0 && (
+                  <View style={[styles.deadlineBadge, { backgroundColor: colors.error + '20' }]}>
+                    <Calendar size={12} color={colors.error} />
+                    <Text style={[styles.deadlineText, { color: colors.error }]}>
+                      {caseItem.daysLeft} {t('deadlines.daysLeft')}
+                    </Text>
+                  </View>
+                )}
+                {caseItem.daysLeft < 0 && (
+                  <View style={[styles.deadlineBadge, { backgroundColor: colors.error }]}>
+                    <AlertCircle size={12} color="#FFFFFF" />
+                    <Text style={styles.overdueText}>Vencido</Text>
+                  </View>
+                )}
+              </View>
+              
+              <Text style={[styles.caseTitle, { color: colors.text }]}>
+                {caseItem.title}
               </Text>
-              <ArrowRight size={16} color="#6C757D" />
-            </View>
-          </TouchableOpacity>
-        ))}
+              <Text style={[styles.caseDescription, { color: colors.textSecondary }]}>
+                {caseItem.description}
+              </Text>
+
+              {/* Progress Bar */}
+              <View style={styles.progressContainer}>
+                <View style={styles.progressHeader}>
+                  <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
+                    Progreso
+                  </Text>
+                  <Text style={[styles.progressPercentage, { color: colors.text }]}>
+                    {caseItem.progress}%
+                  </Text>
+                </View>
+                <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+                  <View 
+                    style={[
+                      styles.progressFill, 
+                      { 
+                        backgroundColor: statusColor,
+                        width: `${caseItem.progress}%` 
+                      }
+                    ]} 
+                  />
+                </View>
+              </View>
+              
+              <View style={styles.caseFooter}>
+                <Text style={[styles.deadlineLabel, { color: colors.textSecondary }]}>
+                  {t('cases.deadline')}: {new Date(caseItem.deadline).toLocaleDateString('es-ES')}
+                </Text>
+                <ArrowRight size={16} color={colors.textSecondary} />
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       {/* Case Wizard Modal */}
@@ -283,37 +459,47 @@ export default function CasesScreen() {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{t('cases.caseWizard')}</Text>
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {t('cases.caseWizard')}
+            </Text>
             <TouchableOpacity
               onPress={() => setShowWizard(false)}
               style={styles.closeButton}
             >
-              <X size={24} color="#6C757D" />
+              <X size={24} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
           
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${(step / 3) * 100}%` }]} />
+          <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+            <View style={[
+              styles.progressFill, 
+              { 
+                backgroundColor: colors.primary,
+                width: `${(step / 3) * 100}%` 
+              }
+            ]} />
           </View>
           
           <ScrollView style={styles.modalContent}>
             {renderWizardStep()}
           </ScrollView>
           
-          <View style={styles.modalFooter}>
+          <View style={[styles.modalFooter, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
             {step > 1 && (
               <TouchableOpacity
-                style={styles.backButton}
+                style={[styles.backButton, { borderColor: colors.border }]}
                 onPress={() => setStep(step - 1)}
               >
-                <Text style={styles.backButtonText}>{t('common.back')}</Text>
+                <Text style={[styles.backButtonText, { color: colors.textSecondary }]}>
+                  {t('common.back')}
+                </Text>
               </TouchableOpacity>
             )}
             
             <TouchableOpacity
-              style={styles.nextButton}
+              style={[styles.nextButton, { backgroundColor: colors.primary }]}
               onPress={handleNext}
               disabled={step === 1 && !selectedCaseType}
             >
@@ -329,82 +515,45 @@ export default function CasesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8F9FA',
-  },
-  header: {
+  headerContent: {
+    alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
   },
-  headerTitle: {
-    fontSize: 24,
-    fontFamily: 'Inter-Bold',
-    color: '#212529',
+  iconContainer: {
+    position: 'relative',
+    marginRight: 12,
   },
-  addButton: {
-    backgroundColor: '#003DA5',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-  },
-  caseCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+  sparkle: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
   },
   caseHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   caseStatus: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   statusText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     fontFamily: 'Inter-Medium',
   },
   deadlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF5F5',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-  },
-  overdueBadge: {
-    backgroundColor: '#DC3545',
   },
   deadlineText: {
     marginLeft: 4,
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#DC3545',
   },
   overdueText: {
     marginLeft: 4,
@@ -413,17 +562,41 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   caseTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#212529',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   caseDescription: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6C757D',
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  progressContainer: {
+    marginBottom: 16,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  progressLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+  },
+  progressPercentage: {
+    fontSize: 12,
+    fontFamily: 'Inter-SemiBold',
+  },
+  progressBar: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
   },
   caseFooter: {
     flexDirection: 'row',
@@ -433,11 +606,9 @@ const styles = StyleSheet.create({
   deadlineLabel: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#495057',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -445,29 +616,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
   },
   modalTitle: {
     fontSize: 20,
     fontFamily: 'Inter-Bold',
-    color: '#212529',
   },
   closeButton: {
     padding: 4,
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: '#E9ECEF',
-    marginHorizontal: 20,
-    marginVertical: 8,
-    borderRadius: 2,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#003DA5',
-    borderRadius: 2,
   },
   modalContent: {
     flex: 1,
@@ -477,69 +633,53 @@ const styles = StyleSheet.create({
   wizardTitle: {
     fontSize: 24,
     fontFamily: 'Inter-Bold',
-    color: '#212529',
     marginBottom: 20,
   },
   optionsGrid: {
     gap: 12,
   },
   optionCard: {
-    backgroundColor: '#FFFFFF',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E9ECEF',
-    borderLeftWidth: 4,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  optionCardSelected: {
-    borderColor: '#003DA5',
-    backgroundColor: '#F8F9FF',
-  },
   optionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
   optionText: {
     flex: 1,
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#212529',
   },
   textArea: {
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E9ECEF',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#212529',
     minHeight: 120,
   },
   summaryCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E9ECEF',
   },
   summaryLabel: {
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
-    color: '#495057',
     marginTop: 12,
     marginBottom: 4,
   },
   summaryValue: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#212529',
     lineHeight: 22,
   },
   modalFooter: {
@@ -547,29 +687,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E9ECEF',
   },
   backButton: {
     flex: 1,
     paddingVertical: 12,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#6C757D',
     borderRadius: 8,
     alignItems: 'center',
   },
   backButtonText: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#6C757D',
   },
   nextButton: {
     flex: 1,
     paddingVertical: 12,
     marginLeft: 8,
-    backgroundColor: '#003DA5',
     borderRadius: 8,
     alignItems: 'center',
   },

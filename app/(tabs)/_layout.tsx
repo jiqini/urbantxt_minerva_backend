@@ -1,19 +1,21 @@
 import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
-import { Wand as Wand2, FileText, Calendar, MessageSquare, BookOpen } from 'lucide-react-native';
+import { Wand2, FileText, Calendar, MessageSquare, BookOpen, Scale } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function TabLayout() {
   const { t } = useLanguage();
+  const { colors } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#f59e0b',
-        tabBarInactiveTintColor: '#64748b',
+        tabBarActiveTintColor: colors.secondary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#e2e8f0',
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 88 : 68,
           paddingBottom: Platform.OS === 'ios' ? 28 : 12,
@@ -29,7 +31,7 @@ export default function TabLayout() {
           fontFamily: 'Inter-Medium',
         },
         headerStyle: {
-          backgroundColor: '#1e3a8a',
+          backgroundColor: colors.primary,
         },
         headerTintColor: '#ffffff',
         headerTitleStyle: {
@@ -42,6 +44,15 @@ export default function TabLayout() {
           title: t('nav.wizard'),
           tabBarIcon: ({ size, color }) => (
             <Wand2 size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="cases"
+        options={{
+          title: t('nav.cases'),
+          tabBarIcon: ({ size, color }) => (
+            <Scale size={size} color={color} />
           ),
         }}
       />

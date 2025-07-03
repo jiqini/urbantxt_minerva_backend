@@ -14,6 +14,7 @@ const translations = {
   es: {
     // Navigation
     'nav.wizard': 'Asistente',
+    'nav.cases': 'Casos',
     'nav.documents': 'Documentos',
     'nav.deadlines': 'Plazos',
     'nav.chat': 'Chat IA',
@@ -32,6 +33,8 @@ const translations = {
     'common.generate': 'Generar',
     'common.download': 'Descargar',
     'common.share': 'Compartir',
+    'common.next': 'Siguiente',
+    'common.finish': 'Finalizar',
     
     // Authentication
     'auth.welcome': 'Bienvenido a Minerva',
@@ -48,6 +51,24 @@ const translations = {
     'wizard.option2': 'Quiero demandar',
     'wizard.option3': 'Tengo una audiencia',
     'wizard.option4': 'Necesito información',
+    
+    // Cases
+    'cases.title': 'Mis Casos',
+    'cases.whatHappened': '¿Qué pasó?',
+    'cases.tellMore': 'Cuéntanos más detalles',
+    'cases.caseWizard': 'Asistente de Casos',
+    'cases.deadline': 'Fecha límite',
+    'cases.active': 'Activo',
+    'cases.pending': 'Pendiente',
+    'cases.completed': 'Completado',
+    'cases.urgent': 'Urgente',
+    'cases.options.sued': 'Me demandaron',
+    'cases.options.wantToSue': 'Quiero demandar',
+    'cases.options.divorce': 'Divorcio',
+    'cases.options.childSupport': 'Pensión alimenticia',
+    'cases.options.laborDispute': 'Conflicto laboral',
+    'cases.options.propertyDispute': 'Disputa de propiedad',
+    'cases.options.other': 'Otro',
     
     // Documents
     'docs.title': 'Constructor de Documentos',
@@ -66,7 +87,7 @@ const translations = {
     'deadlines.subtitle': 'Nunca pierdas una fecha importante',
     'deadlines.upcoming': 'Próximos Plazos',
     'deadlines.add': 'Agregar Plazo',
-    'deadlines.days_left': 'días restantes',
+    'deadlines.daysLeft': 'días restantes',
     'deadlines.add_to_calendar': 'Agregar al Calendario',
     
     // Chat
@@ -90,6 +111,7 @@ const translations = {
   en: {
     // Navigation
     'nav.wizard': 'Wizard',
+    'nav.cases': 'Cases',
     'nav.documents': 'Documents',
     'nav.deadlines': 'Deadlines',
     'nav.chat': 'AI Chat',
@@ -108,6 +130,8 @@ const translations = {
     'common.generate': 'Generate',
     'common.download': 'Download',
     'common.share': 'Share',
+    'common.next': 'Next',
+    'common.finish': 'Finish',
     
     // Authentication
     'auth.welcome': 'Welcome to Minerva',
@@ -124,6 +148,24 @@ const translations = {
     'wizard.option2': 'I want to sue',
     'wizard.option3': 'I have a hearing',
     'wizard.option4': 'I need information',
+    
+    // Cases
+    'cases.title': 'My Cases',
+    'cases.whatHappened': 'What happened?',
+    'cases.tellMore': 'Tell us more details',
+    'cases.caseWizard': 'Case Wizard',
+    'cases.deadline': 'Deadline',
+    'cases.active': 'Active',
+    'cases.pending': 'Pending',
+    'cases.completed': 'Completed',
+    'cases.urgent': 'Urgent',
+    'cases.options.sued': 'I was sued',
+    'cases.options.wantToSue': 'I want to sue',
+    'cases.options.divorce': 'Divorce',
+    'cases.options.childSupport': 'Child support',
+    'cases.options.laborDispute': 'Labor dispute',
+    'cases.options.propertyDispute': 'Property dispute',
+    'cases.options.other': 'Other',
     
     // Documents
     'docs.title': 'Document Builder',
@@ -142,7 +184,7 @@ const translations = {
     'deadlines.subtitle': 'Never miss an important date',
     'deadlines.upcoming': 'Upcoming Deadlines',
     'deadlines.add': 'Add Deadline',
-    'deadlines.days_left': 'days left',
+    'deadlines.daysLeft': 'days left',
     'deadlines.add_to_calendar': 'Add to Calendar',
     
     // Chat
