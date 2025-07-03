@@ -10,20 +10,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  FileText,
-  Users,
-  AlertTriangle,
-  CheckCircle,
-  Edit3,
-  Share,
-  Archive,
-  MoreVertical,
-  Plus,
-} from 'lucide-react-native';
+import { ArrowLeft, Calendar, Clock, FileText, Users, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, CreditCard as Edit3, Share, Archive, MoveVertical as MoreVertical, Plus } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 

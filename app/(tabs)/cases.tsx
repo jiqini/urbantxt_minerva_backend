@@ -13,22 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  Plus,
-  Scale,
-  Calendar,
-  Clock,
-  ArrowRight,
-  X,
-  CircleAlert as AlertCircle,
-  CircleCheck as CheckCircle,
-  Sparkles,
-  FileText,
-  Users,
-  Briefcase,
-  Home,
-  Gavel,
-} from 'lucide-react-native';
+import { Plus, Scale, Calendar, Clock, ArrowRight, X, CircleAlert as AlertCircle, CircleCheck as CheckCircle, Sparkles, FileText, Users, Briefcase, Chrome as Home, Gavel } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 

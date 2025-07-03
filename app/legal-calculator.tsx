@@ -11,18 +11,7 @@ import {
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  ArrowLeft,
-  Calculator,
-  Calendar,
-  DollarSign,
-  Clock,
-  Scale,
-  FileText,
-  AlertCircle,
-  CheckCircle,
-  Info,
-} from 'lucide-react-native';
+import { ArrowLeft, Calculator, Calendar, DollarSign, Clock, Scale, FileText, CircleAlert as AlertCircle, CircleCheck as CheckCircle, Info } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 

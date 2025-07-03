@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
-import { Wand2, FileText, Calendar, MessageSquare, BookOpen, Scale } from 'lucide-react-native';
+import { Wand as Wand2, FileText, Calendar, MessageSquare, BookOpen, Scale } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
