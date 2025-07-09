@@ -7,12 +7,16 @@ const pdf = require('pdf-parse');
 const fs = require('fs');
 const { MongoClient } = require('mongodb');
 const { OpenAI } = require('openai');
+const splitter = require('sentence-splitter');
+const { encode } = require('gpt-3-encoder');
+
+const RETRIES = 2;
 
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY });
 
-const MONGO_URL = process.env.MONGO_URL;
-const DB_NAME = 'legal_data';
+const MONGO_URL = process.env.EXPO_PUBLIC_MONGODB_URI;
+const DB_NAME = 'mongodbVSCodePlaygroundDB';
 const COLLECTION_NAME = 'chunks';
 const CHUNK_SIZE = 1500;
 
@@ -23,28 +27,69 @@ function cleanText(html) {
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // Remove style tags
         .replace(/<[^>]+>/g, ' ') // Remove all other HTML tags
         .replace(/\s+/g, ' ') // Remove extra white space
-        .trim(); // Trim leading and trailing spaces
+        .trim(); // Trim leading  nd trailing spaces
 }
 
-function splitText(text, maxLength = CHUNK_SIZE) {
-    const chunks = [];
-    let start = 0;
+function splitText(text, maxTokens = 500, overlapTokens = 100) {
+    const sentences = splitter.split(text)
+        .filter(part => part.type === 'Sentence')
+        .map(s => s.raw.trim());
 
-    while (start < text.length) {
-        const end = Math.min(start + maxLength, text.length);
-        chunks.push(text.slice(start, end));
-        start = end;
+    const chunks = [];
+    let currentChunk = [];
+    let currentTokens = 0;
+
+    for (let i = 0; i < sentences.length; i++) {
+        const sentence = sentences[i];
+        const sentenceTokens = encode(sentence).length;
+
+        if (currentTokens + sentenceTokens > maxTokens) {
+            chunks.push(currentChunk.join(' '));
+
+            // Creates overlap from the end of the currentChunk
+            let overlap = [];
+            let overlapCount = 0;
+            for (let j = currentChunk.length - 1; j >= 0; j--) {
+                const tokenCount = encode(currentChunk[j]).length;
+                overlapCount += tokenCount;
+
+                if (overlapCount > overlapTokens) break;
+
+                overlap.unshift(currentChunk[j]);
+            }
+            
+            currentChunk = [...overlap];
+            currentTokens = encode(currentChunk.join(' ')).length;
+        }
+
+        currentChunk.push(sentence);
+        currentTokens += sentenceTokens;
+    }
+    
+    if (currentChunk.length > 0) {
+        chunks.push(currentChunk.join(' '))
     }
 
     return chunks;
 }
 ////////////////////////////
 
+/*
+ * This function processes a PDF file, extracts its text, and creates an embedding for each chunk
+ * of text. It then stores the file name, chunk index, text, and embedding in a MongoDB collection.
+*/
+async function processPDF(filePath) {
+    const dataBuffer = fs.readFileSync(filePath);
+    const data = await pdf(dataBuffer);
+    // Optionally clean the text: return cleanText(data.text || '');
+    return data.text || '';
+}
+
 //////// SCRAPE ////////////
 async function scrapeWebsite(url) {
     const res = await axios.get(url);
     const $ = cheerio.load(res.data);
-    const bodyText = $('body').text();
+    const bodyText = $('body').text(); 
     return cleanText(bodyText);
 }
 
@@ -67,7 +112,7 @@ async function getEmbeddings(chunks) {
         let success = false;
         let embedding;
 
-        while (attempt < retries && !success) {
+        while (attempt < RETRIES && !success) {
             try {
                 const response = await openai.embeddings.create({
                     model: 'text-embedding-ada-002',
@@ -83,7 +128,7 @@ async function getEmbeddings(chunks) {
         }
 
         if (!success) {
-            throw new Error(`OpenAI API failed after ${retries} attempts`);
+            throw new Error(`OpenAI API failed after ${RETRIES} attempts`);
         }
         results.push({ text, embedding });
     }
@@ -105,6 +150,10 @@ async function storeChunks(chunks, source) {
         text: chunk.text,
         embedding: chunk.embedding,
     }));
+
+    // Print what will be stored
+    console.log('Storing the following documents in MongoDB:');
+    console.dir(docs, { depth: 2, maxArrayLength: 5 })
 
     await collection.insertMany(docs);
     await client.close();
