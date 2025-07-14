@@ -1,3 +1,8 @@
+/*
+ * This file processes PDFs and websites, extracts and cleans text, splits it into overlapping sentence-based chunks,
+ * generates OpenAI embeddings for each chunk, and stores the results in MongoDB Atlas for semantic search.
+ */
+
 require('dotenv').config();
 const path = require('path');
 const axios = require('axios');
@@ -18,7 +23,6 @@ const openai = new OpenAI({ apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY });
 const MONGO_URL = process.env.EXPO_PUBLIC_MONGODB_URI;
 const DB_NAME = 'mongodbVSCodePlaygroundDB';
 const COLLECTION_NAME = 'chunks';
-const CHUNK_SIZE = 1500;
 
 ////////// F(X) /////////////
 function cleanText(html) {
@@ -30,42 +34,47 @@ function cleanText(html) {
         .trim(); // Trim leading  nd trailing spaces
 }
 
+/* 
+ * This function takes in text and splits the text by maxTokens into chunks. Returns a chunk list. 
+ */
 function splitText(text, maxTokens = 500, overlapTokens = 100) {
+    // Split the text into sentences using sentence-splitter
     const sentences = splitter.split(text)
         .filter(part => part.type === 'Sentence')
         .map(s => s.raw.trim());
 
-    const chunks = [];
-    let currentChunk = [];
-    let currentTokens = 0;
+    const chunks = [];  // Array to hold all chunks
+    let currentChunk = [];  // Current chunk being built
+    let currentTokens = 0;  // Token count for the current chunk
 
     for (let i = 0; i < sentences.length; i++) {
         const sentence = sentences[i];
-        const sentenceTokens = encode(sentence).length;
+        const sentenceTokens = encode(sentence).length;  // Token count for current sentence
 
+        // If adding this sentence would exceed maxTokens, finalize the current chunk
         if (currentTokens + sentenceTokens > maxTokens) {
-            chunks.push(currentChunk.join(' '));
+            chunks.push(currentChunk.join(' '));  // Add the chunk to the list
 
-            // Creates overlap from the end of the currentChunk
+            // Create overlap from the end of the currentChunk
             let overlap = [];
             let overlapCount = 0;
+            // Add sentences from the end of the current chunk until overlapTokens is reached
             for (let j = currentChunk.length - 1; j >= 0; j--) {
                 const tokenCount = encode(currentChunk[j]).length;
                 overlapCount += tokenCount;
-
                 if (overlapCount > overlapTokens) break;
-
-                overlap.unshift(currentChunk[j]);
+                overlap.unshift(currentChunk[j]);  // Add to the start of overlap array
             }
-            
+            // Start the new chunk with the overlap
             currentChunk = [...overlap];
             currentTokens = encode(currentChunk.join(' ')).length;
         }
 
-        currentChunk.push(sentence);
+        currentChunk.push(sentence);  
         currentTokens += sentenceTokens;
     }
     
+    // Add any remaining sentences as the last chunk
     if (currentChunk.length > 0) {
         chunks.push(currentChunk.join(' '))
     }
