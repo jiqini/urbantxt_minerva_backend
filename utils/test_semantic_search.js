@@ -6,7 +6,8 @@ const { getQueryResults } =  require('./query_semantic_search.js');
 
 (async () => {
   //const userQuery = "What are the legal requirements to request the modification of child custody in El Salvador, and how does the court determine the best interest of the child?";
-  const userQuery = "What are the legal requirements and procedural steps for filing a criminal complaint for theft (hurto) in El Salvador?"
+  //const userQuery = "What are the legal requirements and procedural steps for filing a criminal complaint for theft (hurto) in El Salvador?"
+  const userQuery = "I recently got sued for stealing, but I never stole anything. What should I do?"
   const results = await getQueryResults(userQuery);
 
   console.log('🔍 Top Results:\n');
