@@ -1,6 +1,42 @@
 """
-Extracts structured text (titles, bold, italics, font size) from a PDF using PyMuPDF (fitz).
-Outputs a list of text blocks with formatting and hierarchy info for downstream chunking and embedding.
+=============================================================================
+PDF Legal Document Parser - Structure Extractor v2.0
+=============================================================================
+
+Author: Jaime Monjaraz
+Date: July 18, 2025
+Project: Minerva Legal Assistant
+
+Description:
+    Intelligent PDF parsing module for extracting structured content from
+    legal documents with advanced formatting detection. Designed for El Salvador's
+    legal texts including constitutional documents, procedural codes, and
+    regulatory frameworks.
+
+Features:
+    - Smart heading detection using bold text and font size analysis
+    - Multi-line compound title recognition (TÍTULO, CAPÍTULO, SECCIÓN)
+    - Automated boilerplate text filtering
+    - Article numbering pattern exclusion
+    - Font size jump detection for hierarchy identification
+    - Comprehensive metadata extraction
+
+Key Capabilities:
+    - Identifies structural elements: Titles, Chapters, Sections
+    - Handles complex legal document formatting
+    - Preserves hierarchical relationships
+    - Filters legislative boilerplate text
+    - Maintains page reference information
+
+Usage:
+    python parse_pdf_new2.py <pdf_path>
+
+Dependencies:
+    - PyMuPDF (fitz): PDF text extraction and analysis
+    - json: Structured data output
+    - re: Pattern matching for legal document structures
+
+=============================================================================
 """
 
 import fitz  # PyMuPDF
