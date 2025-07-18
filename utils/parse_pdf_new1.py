@@ -1,6 +1,24 @@
 """
-Extracts structured text (titles, bold, italics, font size) from a PDF using PyMuPDF (fitz).
-Outputs a list of text blocks with formatting and hierarchy info for downstream chunking and embedding.
+Description:
+  This script extracts structured text blocks (headings, body text, font size, bold/italic, font names) from a PDF using PyMuPDF (fitz),
+  and outputs a list of sections with formatting and hierarchy information for downstream chunking and embedding.
+
+Usage:
+  - Install dependencies: pip install pymupdf
+  - Run: python utils/parse_pdf_new1.py <pdf_path>
+  - The script writes the extracted structure to output.json in the current directory.
+
+  Each output section has the format:
+    {
+      "heading": <string>,
+      "page": <int>,
+      "font_size": <float>,
+      "is_bold": <bool>,
+      "fonts": [<string>, ...],
+      "body": <string>
+    }
+
+  Author: Ji Qi Ni, July 15, 2025
 """
 
 import fitz  # PyMuPDF
