@@ -1,38 +1,31 @@
 """
-=============================================================================
-PDF Constitution Parser - Legal Document Structure Extractor
-=============================================================================
-
-Author: Jaime Monjaraz
-Date: July 18, 2025
-Project: Minerva Legal Assistant
-
-Description:
-    This module provides intelligent parsing capabilities for legal PDF documents,
-    specifically designed for extracting structured content from constitutional
-    texts. It identifies and categorizes different heading types (Titles, Articles,
-    Chapters) and organizes content into a hierarchical structure suitable for
-    legal AI applications.
-
-Features:
-    - Smart heading detection and categorization
-    - Structural content organization (Titles, Articles, Chapters)
-    - Table of Contents handling
-    - Font-based formatting analysis
-    - JSON output for downstream processing
-
-Usage:
-    python parse_pdf_constitution.py <pdf_path>
-
-Output:
-    Creates 'output.json' with structured legal document sections
-
-Dependencies:
-    - PyMuPDF (fitz): PDF text extraction and analysis
-    - json: Output formatting
-    - re: Pattern matching for legal document structures
-
-=============================================================================
+ * PDF Constitution Parser - Legal Document Structure Extractor
+ *
+ * Description:
+ *   This module provides intelligent parsing capabilities for legal PDF documents,
+ *   specifically designed for extracting structured content from constitutional
+ *   texts. It identifies and categorizes different heading types (Titles, Articles,
+ *   Chapters) and organizes content into a hierarchical structure suitable for
+ *   legal AI applications.
+ *
+ * Features:
+ *   - Smart heading detection and categorization
+ *   - Structural content organization (Titles, Articles, Chapters)
+ *   - Table of Contents handling
+ *   - Font-based formatting analysis
+ *   - JSON output for downstream processing
+ *
+ * Usage:
+ *   - Run: python parse_pdf_constitution.py <pdf_path>
+ *   - Creates 'output.json' with structured legal document sections
+ *
+ * Dependencies:
+ *   - PyMuPDF (fitz): PDF text extraction and analysis
+ *   - json: Output formatting
+ *   - re: Pattern matching for legal document structures
+ *
+ * Jaime Monjaraz, July 18, 2025
+ *
 """
 
 import fitz  # PyMuPDF

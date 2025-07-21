@@ -1,35 +1,33 @@
 """
-=============================================================================
-Enhanced PDF Legal Document Parser - Advanced Structure Extractor
-=============================================================================
-
-Author: Jaime Monjaraz
-Date: July 18, 2025
-Project: Minerva Legal Assistant
-
-Description:
-    Advanced PDF parsing module for extracting structured legal content with
-    enhanced formatting detection. Specifically designed for El Salvador's
-    legal documents including criminal procedural codes and constitutional texts.
-    Features improved compound title recognition and multi-line heading detection.
-
-Features:
-    - Enhanced bold/italic text detection with font size analysis
-    - Compound title recognition (TÍTULO, CAPÍTULO, SECCIÓN)
-    - Multi-line heading consolidation
-    - Advanced boilerplate text filtering
-    - Structural keyword pattern matching
-    - Optimized for criminal procedural codes
-
-Usage:
-    python parse_pdf_new3.py <pdf_path>
-
-Dependencies:
-    - PyMuPDF (fitz): PDF text extraction and formatting analysis
-    - json: Structured output formatting
-    - re: Advanced pattern matching for legal document structures
-
-=============================================================================
+ * Enhanced PDF Legal Document Parser - Advanced Structure Extractor v3.0
+ *
+ * Description:
+ *   Advanced PDF parsing module for extracting structured legal content with
+ *   enhanced formatting detection. Specifically designed for El Salvador's
+ *   legal documents including criminal procedural codes and constitutional texts.
+ *   Features improved compound title recognition, multi-line heading detection,
+ *   and enhanced boilerplate filtering including "CÓDIGO PROCESAL PENAL" patterns.
+ *
+ * Features:
+ *   - Enhanced bold/italic text detection with font size analysis
+ *   - Compound title recognition (TÍTULO, CAPÍTULO, SECCIÓN)
+ *   - Multi-line heading consolidation with similarity matching
+ *   - Advanced boilerplate text filtering (legislative headers, page numbers)
+ *   - Structural keyword pattern matching for legal documents
+ *   - Optimized for criminal procedural codes and constitutional texts
+ *
+ * Usage:
+ *   - Run: python parse_pdf_new3.py <pdf_path>
+ *   - Creates 'output.json' with structured legal document sections including
+ *     hierarchical headings, body text, and comprehensive formatting metadata
+ *
+ * Dependencies:
+ *   - PyMuPDF (fitz): PDF text extraction and formatting analysis
+ *   - json: Structured output formatting
+ *   - re: Advanced pattern matching for legal document structures
+ *
+ * Jaime Monjaraz, July 18, 2025
+ *
 """
 
 import fitz  # PyMuPDF

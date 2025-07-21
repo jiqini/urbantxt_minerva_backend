@@ -1,30 +1,16 @@
 """
- * PDF Legal Document Parser - Structure Extractor v2.0
+ * PDF Criminal Procedural Code Parser
  *
  * Description:
- *   Intelligent PDF parsing module for extracting structured content from
- *   legal documents with advanced formatting detection. Designed for El Salvador's
- *   legal texts including constitutional documents, procedural codes, and
- *   regulatory frameworks. Features smart heading detection using bold text 
- *   and font size analysis with multi-line compound title recognition.
- *
- * Features:
- *   - Smart heading detection using bold text and font size analysis
- *   - Multi-line compound title recognition (TÍTULO, CAPÍTULO, SECCIÓN)
- *   - Automated boilerplate text filtering
- *   - Article numbering pattern exclusion
- *   - Font size jump detection for hierarchy identification
- *   - Comprehensive metadata extraction
+ *   This script parses El Salvador's Criminal Procedural Code (Código Procesal Penal)
+ *   PDFs and extracts structured legal content. Features specialized detection of
+ *   decree patterns, legal sections, and compound titles. Outputs hierarchical
+ *   JSON structure with comprehensive boilerplate filtering and metadata preservation.
  *
  * Usage:
- *   - Run: python parse_pdf_new2.py <pdf_path>
- *   - Creates 'output.json' with structured sections containing headings,
- *     body content, page numbers, and formatting metadata
- *
- * Dependencies:
- *   - PyMuPDF (fitz): PDF text extraction and analysis
- *   - json: Structured data output
- *   - re: Pattern matching for legal document structures
+ *   - Run: python parse_pdf_codigo_procesal.py <pdf_path>
+ *   - Creates 'output.json' with structured criminal procedural code sections
+ *     including decrees, considerations, and procedural articles
  *
  * Jaime Monjaraz, July 18, 2025
  *
@@ -134,7 +120,8 @@ def extract_pdf_structure(pdf_path):
         re.compile(r"ASAMBLEA LEGISLATIVA\s*[-_]*\s*REPUBLICA DE EL SALVADOR", re.IGNORECASE),
         re.compile(r"INDICE LEGISLATIVO", re.IGNORECASE),
         re.compile(r"^\s*\d+\s*$", re.IGNORECASE), # Lines containing only numbers (page numbers)
-        re.compile(r"^[_\-]+$", re.IGNORECASE) # Lines consisting solely of underscores or dashes
+        re.compile(r"^[_\-]+$", re.IGNORECASE), # Lines consisting solely of underscores or dashes
+        # Removed: re.compile(r"CÓDIGO PROCESAL PENAL", re.IGNORECASE) to allow it to be a header
     ]
 
     def finalize_current_section():
@@ -147,7 +134,7 @@ def extract_pdf_structure(pdf_path):
                 "font_size": current_heading_meta["font_size"],
                 "is_bold": current_heading_meta["is_bold"],
                 "fonts": current_heading_meta["fonts"],
-                # REVERTED CHANGE: Join all body lines with a single newline into one string
+                # Join all body lines with a single newline into one string
                 "body": "\n".join([line for line in current_body_lines if line.strip()]).strip() 
             })
         # Reset for the next section
@@ -191,7 +178,18 @@ def extract_pdf_structure(pdf_path):
                 if is_boilerplate:
                     continue # Skip this line entirely
 
-                heading_candidate = is_heading(line_meta, last_font_size)
+                # Explicit checks for user-requested headers
+                is_explicit_heading = False
+                if text.strip() == "DECRETO Nº 733":
+                    is_explicit_heading = True
+                elif text.strip() == "CONSIDERANDO:":
+                    is_explicit_heading = True
+                elif text.strip() == "POR TANTO,":
+                    is_explicit_heading = True
+                elif text.strip() == "DECRETA, el siguiente:":
+                    is_explicit_heading = True # Treat as a specific sub-header
+
+                heading_candidate = is_heading(line_meta, last_font_size) or is_explicit_heading
 
                 if heading_candidate:
                     is_continuation_of_compound_title = False
