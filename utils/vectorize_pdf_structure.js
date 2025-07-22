@@ -33,7 +33,7 @@ const COLLECTION_NAME = 'chunks';
 
 RETRIES = 3
 
-const data = require('../output_constitution.json');  // load your .json file
+const data = require('../output_codigo_procesal.json');  // load your .json file
 
 /*
  * This function will loop through a json file and extract every heading/body and store it as a key in mongodb.
