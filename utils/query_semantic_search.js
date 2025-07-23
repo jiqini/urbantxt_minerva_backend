@@ -1,6 +1,8 @@
 /*
- * This file takes in a user query, generates its embedding using OpenAI, and uses a MongoDB aggregation pipeline 
- * to find the top K most similar documents from the vector database.
+ * This file takes in a user query, generates its embedding using OpenAI, and searches a MongoDB collection
+ * for the most semantically similar body_chunks within each heading. For each heading, it loops over the
+ * body_chunks array and performs a vector search on each chunk's text embedding, returning the top matches
+ * across all headings and chunks.
  */
 
 const { MongoClient } = require('mongodb');
@@ -21,31 +23,35 @@ async function getEmbedding(text) {
     return response.data[0].embedding;
 }
 
-// Function to get the results of a vector query
-async function getQueryResults(query) {
+/*
+ * This function takes a user query, generates its embedding, and uses MongoDB Atlas $vectorSearch to find the 
+ * top K most similar body_chunks across all headings. For each heading, it returns the most relevant chunks based 
+ * on Atlas's cosine similarity.
+ */
+async function getQueryResults(query, topK = 5) {
     const client = new MongoClient(MONGO_URL);
     try {
-        // Get embedding for a query, vectorizes query
         const queryEmbedding = await getEmbedding(query);
-
         await client.connect();
         const db = client.db(DB_NAME);
         const collection = db.collection(COLLECTION_NAME);
 
+        // Use $vectorSearch to find topK most similar body_chunks across all headings
         const pipeline = [
             {
                 $vectorSearch: {
                     index: "embedding_index", // Make sure this matches your Atlas index name
                     queryVector: queryEmbedding,
-                    path: "embedding", // Make sure this matches your field name
+                    path: "body_chunks.embedding", // Path to the embedding inside body_chunks
                     exact: true,
-                    limit: 5
+                    limit: topK
                 }
-            }, {
+            },
+            {
                 $project: {
                     _id: 0,
-                    text: 1,
-                    url: 1,
+                    heading: 1,
+                    text: "$body_chunks.text",
                     score: { $meta: "vectorSearchScore" }
                 }
             }

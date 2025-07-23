@@ -28,51 +28,52 @@ const splitter = require('sentence-splitter');
 const { encode } = require('gpt-3-encoder');
 const openai = new OpenAI({ apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY });
 const MONGO_URL = process.env.EXPO_PUBLIC_MONGODB_URI;
-const DB_NAME = 'mongodbVSCodePlaygroundDB';
+const DB_NAME = 'database_elSalvador';
 const COLLECTION_NAME = 'chunks';
 
 RETRIES = 3
 
-const data = require('../output_constitution.json');  // load your .json file
+const data = require('../output_new3.json');  // load your .json file
 
 /*
- * This function will loop through a json file and extract every heading/body and store it as a key in mongodb.
- * Then for each body within the heading, the function will call createChunks create chunks of 500 tokens and 
- * 100 tokens that overlap from the previous chunk. 
+ * This function will loop through a json file and extract every body (ignoring heading and other metadata) and store 
+ * each chunk as a separate document in mongodb. For each body, the function will call createChunks to create chunks of 
+ * 550 tokens and 125 tokens that overlap from the previous chunk. Each chunk will be stored as { text: <string>, embedding: <array> } 
+ * at the top level of the document. If a chunk with the same text already exists in the collection, it will be skipped to avoid 
+ * duplicate vectorization/storage.
  */
 async function processPDF(data) {
-    // let counter = 0
-
-    // loops through the elements in the json file
-    for (const element of data) {
-        const heading = element.heading;
-        const text = element.body;
-        const chunks = createChunks(text, 500, 100);
-        const embedded = await getEmbedding(chunks);
-        // Build hierarchical document
-        const doc = {
-            heading: heading,
-            body_chunks: embedded
-        };
-
-        /* print statement to see what is going into the database
-        console.log('Document to be stored in MongoDB:');
-        console.dir(doc, { depth: 3, maxArrayLength: 10 });
-
-        // testing purposes 
-        counter++;
-        if (counter == 4) {
-            break; 
-        } */
-
-        await storeHeadingDoc(doc); 
+    const client = new MongoClient(MONGO_URL);
+    await client.connect();
+    const db = client.db(DB_NAME);
+    const collection = db.collection(COLLECTION_NAME);
+    try {
+        for (const element of data) {
+            const text = element.body;
+            if (!text || text.trim() === "") continue; // Skip empty bodies
+            const chunks = createChunks(text, 550, 125);
+            const embedded = await getEmbedding(chunks);
+            // Store each chunk as a separate document, skip if text already exists
+            for (const chunkObj of embedded) {
+                const exists = await collection.findOne({ text: chunkObj.text });
+                if (exists) {
+                    console.log('Skipping duplicate chunk:', chunkObj.text.slice(0, 60) + '...');
+                    continue;
+                }
+                console.log('Document to be stored in MongoDB:');
+                console.dir(chunkObj, { depth: 2 });
+                await storeHeadingDoc(chunkObj, collection);
+            }
+        }
+    } finally {
+        await client.close();
     }
 }
 
 /* 
  * This function takes in text and splits the text by maxTokens into chunks. Returns a chunk list. 
  */
-function createChunks(text, maxTokens = 600, overlapTokens = 150) {
+function createChunks(text, maxTokens = 550, overlapTokens = 125) {
     // Split the text into sentences using sentence-splitter
     const sentences = splitter.split(text)
         .filter(part => part.type === 'Sentence')
@@ -155,19 +156,11 @@ async function getEmbedding(chunks) {
 /*
  * This function takes a hierarchical document (one per heading) and stores it in MongoDB.
  */
-async function storeHeadingDoc(doc) {
-    const client = new MongoClient(MONGO_URL);
-    await client.connect();
-
-    const db = client.db(DB_NAME);
-    const collection = db.collection(COLLECTION_NAME);
-
+async function storeHeadingDoc(doc, collection) {
     // Print what will be stored
     console.log('Storing the following document in MongoDB:');
     console.dir(doc, { depth: 3, maxArrayLength: 10 })
-
     await collection.insertOne(doc);
-    await client.close();
 }
 
 /*
