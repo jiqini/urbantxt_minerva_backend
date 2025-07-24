@@ -33,7 +33,7 @@ const COLLECTION_NAME = 'chunks';
 
 RETRIES = 3
 
-const data = require('../output_new3.json');  // load your .json file
+const data = require('../output_constitution.json');  // load your .json file
 
 /*
  * This function will loop through a json file and extract every body (ignoring heading and other metadata) and store 
@@ -43,31 +43,70 @@ const data = require('../output_new3.json');  // load your .json file
  * duplicate vectorization/storage.
  */
 async function processPDF(data) {
+    // Enable MongoDB connection
     const client = new MongoClient(MONGO_URL);
     await client.connect();
     const db = client.db(DB_NAME);
     const collection = db.collection(COLLECTION_NAME);
-    try {
-        for (const element of data) {
-            const text = element.body;
-            if (!text || text.trim() === "") continue; // Skip empty bodies
-            const chunks = createChunks(text, 550, 125);
-            const embedded = await getEmbedding(chunks);
-            // Store each chunk as a separate document, skip if text already exists
-            for (const chunkObj of embedded) {
-                const exists = await collection.findOne({ text: chunkObj.text });
-                if (exists) {
-                    console.log('Skipping duplicate chunk:', chunkObj.text.slice(0, 60) + '...');
-                    continue;
-                }
-                console.log('Document to be stored in MongoDB:');
-                console.dir(chunkObj, { depth: 2 });
-                await storeHeadingDoc(chunkObj, collection);
+
+    // let chunkCounter = 0; // Counter for previewing chunks
+    for (const element of data) {
+        const heading = element.heading || "";
+        const body = element.body;
+        if (!body || body.trim() === "") continue; // Skip empty bodies
+
+        // Detect article string in heading or at start of body (case-insensitive)
+        let articleMatch = null;
+        // Regex: Art. or art. followed by optional space and numbers (e.g., Art. 123)
+        const artRegex = /(Art\.?|art\.?)[ ]*\d+/;
+        if (heading && artRegex.test(heading)) {
+            articleMatch = heading.match(artRegex)[0];
+        } else if (body && artRegex.test(body)) {
+            // Only check start of body (first 40 chars)
+            const bodyStart = body.slice(0, 40);
+            if (artRegex.test(bodyStart)) {
+                articleMatch = bodyStart.match(artRegex)[0];
             }
         }
-    } finally {
-        await client.close();
+
+        // Set chunking params based on article detection
+        let maxTokens = 1500;
+        let overlapTokens = 250;
+        if (articleMatch) {
+            maxTokens = 2000;
+            overlapTokens = 450;
+        }
+
+        // Build the base text for chunking: always prepend heading if present
+        let baseText = body;
+        if (heading && heading.trim() !== "") {
+            baseText = heading.trim() + "\n" + body.trim();
+        }
+
+        // Create chunks
+        let chunks = createChunks(baseText, maxTokens, overlapTokens);
+
+        // Prepend article string to every chunk if detected
+        if (articleMatch) {
+            chunks = chunks.map(chunk => articleMatch + ": " + chunk);
+        }
+
+        // Get embeddings for chunks
+        const embedded = await getEmbedding(chunks);
+
+        // Store each chunk as a separate document, skip if text already exists
+        for (const chunkObj of embedded) {
+            const exists = await collection.findOne({ text: chunkObj.text });
+            if (exists) {
+                console.log('Skipping duplicate chunk:', chunkObj.text.slice(0, 60) + '...');
+                continue;
+            }
+            console.log('Document to be stored in MongoDB:');
+            console.dir(chunkObj, { depth: 2 });
+            await storeHeadingDoc(chunkObj, collection);
+        }
     }
+    await client.close();
 }
 
 /* 
@@ -151,7 +190,6 @@ async function getEmbedding(chunks) {
     }
     return results;
 }
-
 
 /*
  * This function takes a hierarchical document (one per heading) and stores it in MongoDB.

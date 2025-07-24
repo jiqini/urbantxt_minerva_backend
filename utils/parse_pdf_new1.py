@@ -1,7 +1,7 @@
 """
 Description:
-  This script extracts structured text blocks (headings, body text, font size, bold/italic, font names) from a PDF using PyMuPDF (fitz),
-  and outputs a list of sections with formatting and hierarchy information for downstream chunking and embedding.
+    This script extracts structured text blocks (headings, body text, font size, bold/italic, font names) from a PDF using PyMuPDF (fitz),
+    and outputs a list of sections with formatting and hierarchy information for downstream chunking and embedding.
 
 Usage:
   - Install dependencies: pip install pymupdf
