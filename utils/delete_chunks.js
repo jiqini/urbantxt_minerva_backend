@@ -11,13 +11,13 @@ async function deleteChunksBySource() {
     const db = client.db("tagged_db");
     const collection = db.collection("tag");
 
-    const docs = await collection.find({ source: "codigo_de_familia" }).toArray();
+    const docs = await collection.find({ source: "output_new4" }).toArray();
     if (!docs || docs.length === 0) {
-      console.log("No chunks found with source: codigo_de_familia");
+      console.log("No chunks found with source: output_new4");
       await client.close();
       return;
     }
-    console.log(`Found ${docs.length} chunks with source: codigo_de_familia. Previewing first 3:`);
+    console.log(`Found ${docs.length} chunks with source: output_new4. Previewing first 3:`);
     docs.slice(0, 3).forEach((doc, idx) => {
       console.log(`--- Chunk ${idx + 1} ---`);
       const { embedding, ...docWithoutEmbedding } = doc;
@@ -34,8 +34,8 @@ async function deleteChunksBySource() {
 
     rl.question('Are you sure you want to delete these chunks? (yes/no): ', async (answer) => {
       if (answer.trim().toLowerCase() === 'yes') {
-        const result = await collection.deleteMany({ source: "codigo_de_familia" });
-        console.log(`🗑️ Deleted ${result.deletedCount} chunks with source: codigo_de_familia`);
+        const result = await collection.deleteMany({ source: "output_new4" });
+        console.log(`🗑️ Deleted ${result.deletedCount} chunks with source: output_new4`);
       } else {
         console.log('Aborted deletion.');
       }
