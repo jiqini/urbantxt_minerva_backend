@@ -93,46 +93,39 @@ async function getTagsLLM(text) {
     const prompt = `
 You are a legal expert in Salvadoran consumer protection law.
 
-Your task is to analyze the following legal text and select ONLY the relevant tags from this fixed list:
+Given the following legal text, identify and return ONLY the relevant tags from this list:
 ${JSON.stringify(Tags)}
 
-Instructions:
-- Only choose tags from the list above. Do NOT invent new tags or use synonyms.
-- Ignore generic or structural terms such as "law", "article", or "regulation".
-- Select only those tags that are directly and clearly applicable to the content.
+Guidelines:
+- Use only tags from the list above. Do NOT invent new tags or use synonyms.
+- Skip generic structural terms like "law", "article", "regulation".
+- Output a valid JSON array of lowercase strings with only directly relevant tags.
 
-Legal Text:
-"""
+Text:
 ${text}
-"""
 
-Return your answer as a valid JSON array of lowercase strings. Example:
+Format:
 ["consumer protection", "false advertising", "sanctions and fines"]
-`.trim();
-    // Normalize Tags list for robust matching
-    const canonicalTags = Tags.map(t => t.toLowerCase().trim());
+    `.trim();
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
             const response = await openai.chat.completions.create({
-                model: 'gpt-4o',
-                messages: [
-                    { role: 'system', content: 'You are a consumer protection law expert for El Salvador.' },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.0,
-                max_tokens: 100,
+            model: 'gpt-4o',
+            messages: [
+                { role: 'system', content: 'You are a consumer protection law expert for El Salvador.' },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.0,
+            max_tokens: 300,
             });
             // Extract JSON array from response
             const content = response.choices[0].message.content;
             const match = content.match(/\[.*\]/s);
             if (!match) throw new Error('No JSON array found in LLM response');
             let tags = JSON.parse(match[0]);
-            // Debug: print raw LLM output
-            console.log('[LLM Raw Tags]', tags);
-            // Post-process: lowercase, deduplicate, trim
-            tags = Array.from(new Set(tags.map(t => t.toLowerCase().trim())));
-            // Filter to canonical list
-            tags = tags.filter(t => canonicalTags.includes(t));
+            // Post-process: lowercase, deduplicate, filter to tag list
+            tags = Array.from(new Set(tags.map(t => t.toLowerCase())));
+            tags = tags.filter(t => Tags.includes(t));
             return tags;
         } catch (err) {
             console.warn(`[Tagging] OpenAI LLM failed (attempt ${attempt + 1}):`, err.message);
@@ -148,26 +141,18 @@ const DB_NAME = 'tagged_db';
 const COLLECTION_NAME = 'tag';
 
 async function storeConsumerLawChunks(data) {
-    const client = new MongoClient(MONGO_URL);
-    await client.connect();
-    const db = client.db(DB_NAME);
-    const collection = db.collection(COLLECTION_NAME);
-    let elementIdx = 0;
+    let previewCount = 0;
     for (const element of data) {
-        elementIdx++;
         let body = element.body ? element.body.trim() : null;
         if (!body) continue;
-        // Use heading from element if present, else extract from body if matches 'Art. [number].-'
         let heading = element.heading ? element.heading.trim() : null;
         if (heading) {
-            // If heading matches 'Art. [number].-' or 'Art. [number] -', trim '.-' or ' -'
-            const headingMatch = heading.match(/^(Art\.\?\s*\d+)(\.-| -)?/i);
+            const headingMatch = heading.match(/^(Art\.?\s*\d+)(\.-| -)?/i);
             if (headingMatch) {
                 heading = headingMatch[1];
             }
         } else {
-            // If no heading, try to extract from body
-            const headingMatch = body.match(/^(Art\.\?\s*\d+)(\.-| -)?/i);
+            const headingMatch = body.match(/^(Art\.?\s*\d+)(\.-| -)?/i);
             if (headingMatch) {
                 heading = headingMatch[1];
                 body = body.replace(headingMatch[0], '').trim();
@@ -176,6 +161,7 @@ async function storeConsumerLawChunks(data) {
         }
         const chunks = createChunks(body, 1500, 250);
         for (const chunkText of chunks) {
+            if (previewCount >= 10) break;
             const embedding = await getEmbedding(chunkText);
             const tags = await getTagsLLM(chunkText);
             const doc = {
@@ -185,18 +171,13 @@ async function storeConsumerLawChunks(data) {
                 source: 'output_new4',
                 heading: heading || null
             };
-            let exists = await collection.findOne({ text: doc.text });
-            if (exists) {
-                console.log('[MongoDB] Skipping duplicate chunk:', doc.text.slice(0, 60) + '...');
-                continue;
-            }
-            console.log('\n[Storing Chunk]');
-            console.dir(doc, { depth: 3, maxArrayLength: 20 });
-            await collection.insertOne(doc);
-            console.log('[MongoDB] Inserted chunk:', doc.text.slice(0, 60) + '...');
+            console.log(`\n--- Chunk ${previewCount + 1} ---`);
+            console.dir({ heading: doc.heading, tags: doc.tags, text: doc.text }, { depth: 2, maxArrayLength: 20 });
+            previewCount++;
         }
+        if (previewCount >= 10) break;
     }
-    await client.close();
+    console.log('\nPreview complete. No data was stored in MongoDB.');
 }
 
 storeConsumerLawChunks(data)
