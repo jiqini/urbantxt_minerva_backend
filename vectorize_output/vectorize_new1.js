@@ -18,18 +18,13 @@ const COLLECTION_NAME = 'tag';
 const RETRIES = 3;
 
 const Tags = [
-  // Family Law (Core)
   "child custody", "shared custody", "visitation rights", "divorce", "contested divorce", "child support", "spousal support", 
   "parental authority", "adoption", "domestic violence", "protection order", "property separation", "paternity", "alimony",
-  // Civil Procedure
   "lawsuit filing", "civil trial", "evidence submission", "appeals process", "court deadlines", "judicial decision", 
   "legal representation", "jurisdiction", "court notification", "procedural hearing", "default judgment", "court documentation",
-  // Criminal (family law context)
   "domestic abuse", "child abuse", "restraining order", "criminal complaint", "protective measures",
-  // Legal Actions / Requests
   "request custody", "modify custody", "enforce visitation", "file for divorce", "request protection order", "appeal ruling", 
   "petition for adoption", "challenge custody", "request spousal support",
-  // Contextual Tags
   "family law el salvador", "civil procedure el salvador", "court process", "el salvador family court", "legal process el salvador",
   "procedural code"
 ];
