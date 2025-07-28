@@ -75,7 +75,7 @@ if __name__ == "__main__":
         print("Usage: python parse_family.py <pdf_path>")
         sys.exit(1)
     pdf_path = sys.argv[1]
-    output_path = os.path.join(os.path.dirname(__file__), "../output_family.json")
+    output_path = os.path.join(os.path.dirname(__file__), "../output_parsed_pdf/output_family.json")
 
     # Parse PDF and write JSON
     parsed = parse_family_pdf(pdf_path)

@@ -91,11 +91,31 @@ async function getEmbedding(text) {
 }
 
 async function getTagsLLM(text) {
-    const prompt = `Given the following Salvadoran Constitution text, select all applicable tags from this list ONLY (do not invent new tags, do not use synonyms): ${JSON.stringify(Tags)}. Avoid generic tags like "law" or "article".\n\nText: ${text}\n\nReturn the tags as a JSON array of lowercase strings, like:\n["constitution", "human rights", "due process"]`;
+    const prompt = `
+You are a legal expert in El Salvador's Constitution.
+
+Your task is to classify the following constitutional text by selecting the most relevant tags from this fixed list:
+${JSON.stringify(Tags)}
+
+Strict rules:
+- Use only the tags from the list. Do NOT invent new tags, use synonyms, or alter existing tag names.
+- Do NOT include vague or generic terms like "law", "article", or "legal".
+- Only include tags that are clearly and specifically relevant to the content. Be concise and precise.
+
+Constitutional text:
+"""
+${text}
+"""
+
+Return your answer as a valid JSON array of lowercase strings.
+Example:
+["constitution", "human rights", "due process"]
+`.trim();
+
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
             const response = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-4o',
             messages: [
                 { role: 'system', content: 'You are a Salvadoran constitutional law expert.' },
                 { role: 'user', content: prompt }

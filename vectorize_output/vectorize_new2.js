@@ -91,11 +91,29 @@ async function getEmbedding(text) {
 }
 
 async function getTagsLLM(text) {
-    const prompt = `Given the following tax law text, select all applicable tags from this list ONLY (do not invent new tags, do not use synonyms): ${JSON.stringify(Tags)}. Avoid generic tags like "law" or "article".\n\nText: ${text}\n\nReturn the tags as a JSON array of lowercase strings, like:\n["tax amnesty", "tax compliance", "payment plans"]`;
+    const prompt = `
+You are a tax law expert specializing in El Salvador's fiscal policies.
+
+Your task is to classify the following tax-related legal text by selecting only the relevant tags from this fixed list:
+${JSON.stringify(Tags)}
+
+Strict rules:
+- Use only the tags from the list above. Do NOT invent new tags, use synonyms, or modify existing tags.
+- Do NOT include vague or generic terms like "law", "article", or "legal".
+- Only include tags that are clearly and specifically relevant to the content. Be concise and precise.
+
+Tax Law Text:
+"""
+${text}
+"""
+
+Return your answer as a valid JSON array of lowercase strings. Example:
+["tax amnesty", "tax compliance", "payment plans"]
+`.trim();
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
             const response = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-4o',
             messages: [
                 { role: 'system', content: 'You are a tax law expert for El Salvador.' },
                 { role: 'user', content: prompt }

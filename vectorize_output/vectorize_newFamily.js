@@ -102,11 +102,29 @@ async function getEmbedding(text) {
 }
 
 async function getTagsLLM(text) {
-    const prompt = `Given the following legal text, select all applicable tags from this list ONLY (do not invent new tags, do not use synonyms): ${JSON.stringify(Tags)}. Avoid generic tags like "law" or "article".\n\nText: ${text}\n\nReturn the tags as a JSON array of lowercase strings, like:\n["divorce", "visitation rights", "parental authority"]`;
+    const prompt = `
+You are a legal expert in Salvadoran family law.
+
+Your task is to analyze the following legal text and select ONLY the relevant tags from this fixed list:
+${JSON.stringify(Tags)}
+
+Instructions:
+- Only choose tags from the list above. Do NOT invent new tags, use synonyms, or modify the tag wording.
+- Avoid vague or structural terms like "law", "article", or "legal".
+- Select only the tags that are clearly applicable to the legal content.
+
+Legal Text:
+"""
+${text}
+"""
+
+Return your answer as a valid JSON array of lowercase strings. Example:
+["custody", "visitation rights", "child support"]
+`.trim();
     for (let attempt = 0; attempt < RETRIES; attempt++) {
         try {
             const response = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-4o',
             messages: [
                 { role: 'system', content: 'You are a legal expert for El Salvador family law.' },
                 { role: 'user', content: prompt }
@@ -142,13 +160,28 @@ async function storeChunk(doc, collection) {
 }
 
 async function processFamilyLaw(data) {
-    const client = new MongoClient(MONGO_URL);
-    await client.connect();
-    const db = client.db(DB_NAME);
-    const collection = db.collection(COLLECTION_NAME);
-    let elementIdx = 0;
+    const readline = require('readline');
+    const previewChunks = [];
+    const allDocs = [];
+    let chunkCount = 0;
+    // First, count total chunks for progress display
+    let totalChunks = 0;
     for (const element of data) {
-        elementIdx++;
+        const heading = element.heading ? element.heading.trim() : null;
+        let body = element.body ? element.body.trim() : null;
+        if (!heading || !body) continue;
+        const article = findArticleString(body);
+        if (article) {
+            body = body.replace(article, '').trim();
+            body = body.replace(/^[-.\s]+/, '');
+        }
+        const chunks = createChunks(body, 1500, 250);
+        totalChunks += chunks.length;
+    }
+
+    // Now process with progress logs
+    let processedChunks = 0;
+    for (const element of data) {
         const heading = element.heading ? element.heading.trim() : null;
         let body = element.body ? element.body.trim() : null;
         if (!heading || !body) continue;
@@ -159,8 +192,13 @@ async function processFamilyLaw(data) {
         }
         const chunks = createChunks(body, 1500, 250);
         for (const chunkText of chunks) {
+            processedChunks++;
+            console.log(`\n[${processedChunks}/${totalChunks}] Getting embedding...`);
             const embedding = await getEmbedding(chunkText);
+            console.log(`[${processedChunks}/${totalChunks}] Embedding received.`);
+            console.log(`[${processedChunks}/${totalChunks}] Getting tags from LLM...`);
             const tags = await getTagsLLM(chunkText);
+            console.log(`[${processedChunks}/${totalChunks}] Tags received.`);
             const doc = {
                 text: chunkText,
                 embedding,
@@ -169,18 +207,59 @@ async function processFamilyLaw(data) {
                 heading,
                 article: article || null
             };
-            console.log('\n[Storing Chunk]');
-            console.dir(doc, { depth: 3, maxArrayLength: 20 });
-            let exists = await collection.findOne({ text: doc.text });
-            if (exists) {
-                console.log('[MongoDB] Skipping duplicate chunk:', doc.text.slice(0, 60) + '...');
-                continue;
+            allDocs.push(doc);
+            chunkCount++;
+            if (previewChunks.length < 10) {
+                previewChunks.push({
+                    heading: doc.heading,
+                    article: doc.article,
+                    tags: doc.tags,
+                    text: doc.text
+                });
             }
-            await collection.insertOne(doc);
-            console.log('[MongoDB] Inserted chunk:', doc.text.slice(0, 60) + '...');
         }
     }
-    await client.close();
+
+    // Preview first 10 chunks
+    console.log('\n=== Preview: First 10 Chunks to be Stored ===');
+    previewChunks.forEach((chunk, idx) => {
+        console.log(`\n--- Chunk ${idx + 1} ---`);
+        console.dir(chunk, { depth: 2, maxArrayLength: 20 });
+    });
+    if (chunkCount > 10) {
+        console.log(`\n...and ${chunkCount - 10} more chunks will be stored.`);
+    }
+
+    // Prompt user to continue
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    await new Promise((resolve) => {
+        rl.question('\nContinue and store all chunks in MongoDB? (yes/no): ', async (answer) => {
+            if (answer.trim().toLowerCase() === 'yes') {
+                const client = new MongoClient(MONGO_URL);
+                await client.connect();
+                const db = client.db(DB_NAME);
+                const collection = db.collection(COLLECTION_NAME);
+                for (const doc of allDocs) {
+                    let exists = await collection.findOne({ text: doc.text });
+                    if (exists) {
+                        console.log('[MongoDB] Skipping duplicate chunk:', doc.text.slice(0, 60) + '...');
+                        continue;
+                    }
+                    await collection.insertOne(doc);
+                    console.log('[MongoDB] Inserted chunk:', doc.text.slice(0, 60) + '...');
+                }
+                await client.close();
+                console.log('All chunks stored in MongoDB.');
+            } else {
+                console.log('Aborted. No chunks were stored.');
+            }
+            rl.close();
+            resolve();
+        });
+    });
 }
 
 processFamilyLaw(data)

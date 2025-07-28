@@ -89,11 +89,30 @@ async function getEmbedding(text) {
 }
 
 async function getTagsLLM(text) {
-    const prompt = `Given the following civil procedure/civil code text, select all applicable tags from this list ONLY (do not invent new tags, do not use synonyms): ${JSON.stringify(Tags)}. Avoid generic tags like "law" or "article".\n\nText: ${text}\n\nReturn the tags as a JSON array of lowercase strings, like:\n["civil procedure", "appeals", "deadlines"]`;
+    const prompt = `
+You are a legal expert in El Salvador's civil procedure and civil code.
+
+Your task is to classify the following legal text by selecting only the relevant tags from this fixed list:
+${JSON.stringify(Tags)}
+
+Strict rules:
+- Use only the tags from the list. Do not create new tags, use synonyms, or modify existing tags.
+- Do not include vague or generic terms like "law", "article", or "legal".
+- Only include tags that are clearly relevant to the content. Be concise and precise.
+
+Legal text:
+"""
+${text}
+"""
+
+Return your answer as a valid JSON array of lowercase strings. Example:
+["civil procedure", "appeals", "deadlines"]
+`.trim();
+
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
             const response = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-4o',
             messages: [
                 { role: 'system', content: 'You are a civil procedure/civil code expert for El Salvador.' },
                 { role: 'user', content: prompt }
