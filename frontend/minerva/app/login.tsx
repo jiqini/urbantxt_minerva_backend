@@ -8,12 +8,12 @@ import {
   Alert,
 } from 'react-native';
 import { router } from 'expo-router';
-import SignUpImg from '../assets/svg/signUpImg.svg';
+import LoginImg from '../assets/svg/loginImg.svg';
 import BackArrow from '../assets/svg/backArrow.svg';
 import RevealPasswordsIcon from '../assets/svg/revealPassword.svg';
 import GoogleIcon from '../assets/svg/GOOG-0ed88f7c 1.svg';
 
-export default function SignUpScreen() {
+export default function loginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
@@ -58,7 +58,7 @@ export default function SignUpScreen() {
         <BackArrow width={40} height={40} />
       </TouchableOpacity>
 
-      <SignUpImg width={186} height={183} style={{ marginTop: 90 }} />
+      <LoginImg width={186} height={183} style={{ marginTop: 90 }} />
       <Text style={styles.title}>Iniciar Sesión</Text>
 
       <TextInput
@@ -84,12 +84,12 @@ export default function SignUpScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.forgetPasswordButton} onPress={() => router.replace('/(tabs)')}>
+      <TouchableOpacity style={styles.forgetPasswordButton} onPress={() => router.replace('/forgotPassword')}>
         <Text style={styles.forgetPasswordText}>¿Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.signUpButton} onPress={handleLogin}>
-        <Text style={styles.signUpText}>Iniciar Sesión</Text>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <Text style={styles.loginText}>Iniciar Sesión</Text>
       </TouchableOpacity>
 
       <View style={{ flex: 1, justifyContent: 'center', alignContent: 'center', flexDirection: 'row' }}>
@@ -98,9 +98,9 @@ export default function SignUpScreen() {
         <View style={styles.dash} />
       </View>
 
-      <TouchableOpacity style={styles.signUpWithGoogleButton} onPress={handleLogin}>
+      <TouchableOpacity style={styles.loginWithGoogleButton} onPress={handleLogin}>
         <GoogleIcon width={32} height={32} style={{ position: 'absolute', left: 55, top: 8 }} />
-        <Text style={styles.signUpWithGoogleText}>Iniciar con Google</Text>
+        <Text style={styles.loginWithGoogleText}>Iniciar con Google</Text>
       </TouchableOpacity>
     </View>
   );
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     top: 50,
     zIndex: 10,
   },
-  signUpButton: {
+  loginButton: {
     marginTop: 32,
     width: 338,
     height: 60,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFF',
     marginBottom: 40,
   },
-  signUpText: {
+  loginText: {
     color: '#FFF',
     fontSize: 14,
     fontWeight: '600',
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     fontWeight: 400,
     marginHorizontal: 10,
   },
-  signUpWithGoogleButton: {
+  loginWithGoogleButton: {
     width: 338,
     height: 47,
     borderRadius: 58,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600', 
   },
-  signUpWithGoogleText: {
+  loginWithGoogleText: {
     color: '#000',
     fontFamily: 'Inter',
     fontSize: 15,
