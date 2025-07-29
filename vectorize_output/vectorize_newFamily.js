@@ -18,12 +18,37 @@ const COLLECTION_NAME = 'tag';
 const RETRIES = 3;
 
 const Tags = [
-    "divorce", "custody", "shared custody", "visitation rights", "parental authority", "parental responsibility", "alimony", 
-    "child support", "marriage annulment", "adoption", "joint adoption", "individual adoption", "domestic violence", "protective measures", 
-    "property division", "family mediation", "minor protection", "emancipation", "family court procedure", "father’s rights", 
-    "mother’s rights", "cohabitation", "separation", "civil union", "paternity", "maternity", "guardianship", "legal representative", 
-    "child removal", "suspension of rights", "modification of measures", "family residence", "child travel", "child abduction", 
-    "custody transfer", "special tutor", "child education", "child housing", "spousal support", "family registry", "name change"
+    "civil procedure", "civil code", "lawsuit process", "legal procedure", "appeals", "evidence rules",
+    "trial process", "commercial law", "judicial hearings", "procedural law", "jurisdiction", "deadlines",
+    "notifications", "motions", "remedies", "civil court", "litigation", "constitution", "legislative power", "executive power", "judicial power", "state organization",
+    "president of the republic", "human rights", "constitutional rights", "due process", "presumption of innocence",
+    "freedom of expression", "freedom of religion", "right to privacy", "habeas corpus", "nationality", "citizenship",
+    "electoral process", "political parties", "public officials", "family rights", "children's rights", "elderly rights",
+    "social security", "public health", "education rights", "public finance", "national budget", "tax system",
+    "natural resources", "flag and symbols", "language", "official religion", "national holidays", "child custody", "shared custody", "visitation rights", "divorce", "contested divorce", "child support", "spousal support", 
+    "parental authority", "adoption", "domestic violence", "protection order", "property separation", "paternity", "alimony",
+    "lawsuit filing", "civil trial", "evidence submission", "appeals process", "court deadlines", "judicial decision", 
+      "legal representation", "jurisdiction", "court notification", "procedural hearing", "default judgment", "court documentation",
+      "domestic abuse", "child abuse", "restraining order", "criminal complaint", "protective measures",
+      "request custody", "modify custody", "enforce visitation", "file for divorce", "request protection order", "appeal ruling", 
+      "petition for adoption", "challenge custody", "request spousal support",
+      "family law el salvador", "civil procedure el salvador", "court process", "el salvador family court", "legal process el salvador",
+      "procedural code", "tax amnesty", "fiscal forgiveness", "debt regularization", "tax compliance", "tax obligations",
+        "customs penalties", "social security debt", "ISSS", "Dirección General de Impuestos Internos",
+        "Dirección General de Aduanas", "tributary law", "transitional tax law", "tax relief El Salvador",
+        "government debt programs", "taxpayer benefits", "payment plans", "late tax payments",
+        "legal deadlines", "reduced interest and penalties", "victim protection", "gender violence", "domestic violence", "protective measures", "sexual violence",
+          "judicial protection", "victim rights", "psychosocial support", "legal assistance", "restraining order",
+          "preventative measures", "reparations", "violence against women", "violence against children",
+          "court proceedings", "law enforcement", "criminal justice process", "human rights", "due process", "consumer protection", "consumer rights", "product warranties", "false advertising", "deceptive practices",
+            "inspections", "complaints and claims", "mediation", "consumer agency", "sanctions and fines",
+            "administrative procedure", "consumer dispute resolution", "Defensoría del Consumidor", "service contracts",
+            "retail regulations", "enforcement powers", "divorce", "custody", "shared custody", "visitation rights", "parental authority", "parental responsibility", "alimony", 
+                "child support", "marriage annulment", "adoption", "joint adoption", "individual adoption", "domestic violence", "protective measures", 
+                "property division", "family mediation", "minor protection", "emancipation", "family court procedure", "father’s rights", 
+                "mother’s rights", "cohabitation", "separation", "civil union", "paternity", "maternity", "guardianship", "legal representative", 
+                "child removal", "suspension of rights", "modification of measures", "family residence", "child travel", "child abduction", 
+                "custody transfer", "special tutor", "child education", "child housing", "spousal support", "family registry", "name change"
 ];
 
 const data = require('../output_parsed_pdf/output_family.json'); // Adjust path as needed
@@ -89,7 +114,7 @@ async function getEmbedding(text) {
     for (let attempt = 0; attempt < RETRIES; attempt++) {
         try {
             const response = await openai.embeddings.create({
-            model: 'text-embedding-ada-002',
+            model: 'text-embedding-3-small',
             input: text,
         });
         return response.data[0].embedding;
@@ -102,35 +127,35 @@ async function getEmbedding(text) {
 }
 
 async function getTagsLLM(text) {
-    const prompt = `
-You are a legal expert in Salvadoran family law.
+  const prompt = `
+You are a legal expert in Salvadoran law across family, civil, constitutional, tax, and consumer protection domains.
 
-Your task is to analyze the following legal text and select ONLY the relevant tags from this fixed list:
+Given the following legal text, identify and return ONLY the relevant tags from this list:
 ${JSON.stringify(Tags)}
 
 Instructions:
-- Only choose tags from the list above. Do NOT invent new tags, use synonyms, or modify the tag wording.
-- Avoid vague or structural terms like "law", "article", or "legal".
-- Select only the tags that are clearly applicable to the legal content.
+- Use only tags from the list above. Do NOT invent new tags or use synonyms.
+- Ignore vague terms like "law", "article", or "regulation".
+- Return a valid JSON array of lowercase strings.
 
-Legal Text:
+Text:
 """
 ${text}
 """
 
-Return your answer as a valid JSON array of lowercase strings. Example:
+Format:
 ["custody", "visitation rights", "child support"]
 `.trim();
     for (let attempt = 0; attempt < RETRIES; attempt++) {
         try {
             const response = await openai.chat.completions.create({
-            model: 'gpt-4o',
+            model: 'gpt-3.5-turbo',
             messages: [
-                { role: 'system', content: 'You are a legal expert for El Salvador family law.' },
+                { role: 'system', content: 'You are a legal expert in Salvadoran law (family, civil, constitutional, tax, and consumer protection).' },
                 { role: 'user', content: prompt }
             ],
             temperature: 0.0,
-            max_tokens: 100,
+            max_tokens: 300,
         });
         // Extract JSON array from response
         const content = response.choices[0].message.content;
@@ -160,106 +185,58 @@ async function storeChunk(doc, collection) {
 }
 
 async function processFamilyLaw(data) {
-    const readline = require('readline');
-    const previewChunks = [];
-    const allDocs = [];
-    let chunkCount = 0;
-    // First, count total chunks for progress display
-    let totalChunks = 0;
-    for (const element of data) {
-        const heading = element.heading ? element.heading.trim() : null;
-        let body = element.body ? element.body.trim() : null;
-        if (!heading || !body) continue;
-        const article = findArticleString(body);
-        if (article) {
-            body = body.replace(article, '').trim();
-            body = body.replace(/^[-.\s]+/, '');
-        }
-        const chunks = createChunks(body, 1500, 250);
-        totalChunks += chunks.length;
-    }
+    const client = new MongoClient(MONGO_URL);
+    try {
+        await client.connect();
+        const db = client.db(DB_NAME);
+        const collection = db.collection(COLLECTION_NAME);
 
-    // Now process with progress logs
-    let processedChunks = 0;
-    for (const element of data) {
-        const heading = element.heading ? element.heading.trim() : null;
-        let body = element.body ? element.body.trim() : null;
-        if (!heading || !body) continue;
-        const article = findArticleString(body);
-        if (article) {
-            body = body.replace(article, '').trim();
-            body = body.replace(/^[-.\s]+/, '');
-        }
-        const chunks = createChunks(body, 1500, 250);
-        for (const chunkText of chunks) {
-            processedChunks++;
-            console.log(`\n[${processedChunks}/${totalChunks}] Getting embedding...`);
-            const embedding = await getEmbedding(chunkText);
-            console.log(`[${processedChunks}/${totalChunks}] Embedding received.`);
-            console.log(`[${processedChunks}/${totalChunks}] Getting tags from LLM...`);
-            const tags = await getTagsLLM(chunkText);
-            console.log(`[${processedChunks}/${totalChunks}] Tags received.`);
-            const doc = {
-                text: chunkText,
-                embedding,
-                tags,
-                source: 'codigo_de_familia',
-                heading,
-                article: article || null
-            };
-            allDocs.push(doc);
-            chunkCount++;
-            if (previewChunks.length < 10) {
-                previewChunks.push({
+        for (const element of data) {
+            const heading = element.heading ? element.heading.trim() : null;
+            let body = element.body ? element.body.trim() : null;
+            if (!heading || !body) continue;
+            const article = findArticleString(body);
+            if (article) {
+                body = body.replace(article, '').trim();
+                body = body.replace(/^[-.\s]+/, '');
+            }
+            const chunks = createChunks(body, 1500, 250);
+            for (const chunkText of chunks) {
+                const embedding = await getEmbedding(chunkText);
+                const tags = await getTagsLLM(chunkText);
+                const doc = {
+                    text: chunkText,
+                    embedding,
+                    tags,
+                    source: 'codigo_de_familia',
+                    heading,
+                    article: article || null
+                };
+                
+                // Preview chunk before storing/skipping
+                console.dir({
                     heading: doc.heading,
                     article: doc.article,
                     tags: doc.tags,
-                    text: doc.text
-                });
+                    text: doc.text,
+                    embedding_preview: doc.embedding ? doc.embedding.slice(0, 8) : null
+                }, { depth: 2, maxArrayLength: 20 });
+
+                // Check for duplicate by text
+                const exists = await collection.findOne({ text: doc.text });
+                if (!exists) {
+                    await collection.insertOne(doc);
+                    console.log('✓ Inserted new chunk');
+                } else {
+                    console.log('⚠ Skipped duplicate chunk');
+                }
             }
         }
+    } catch (err) {
+        console.error('Error during storage:', err);
+    } finally {
+        await client.close();
     }
-
-    // Preview first 10 chunks
-    console.log('\n=== Preview: First 10 Chunks to be Stored ===');
-    previewChunks.forEach((chunk, idx) => {
-        console.log(`\n--- Chunk ${idx + 1} ---`);
-        console.dir(chunk, { depth: 2, maxArrayLength: 20 });
-    });
-    if (chunkCount > 10) {
-        console.log(`\n...and ${chunkCount - 10} more chunks will be stored.`);
-    }
-
-    // Prompt user to continue
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    await new Promise((resolve) => {
-        rl.question('\nContinue and store all chunks in MongoDB? (yes/no): ', async (answer) => {
-            if (answer.trim().toLowerCase() === 'yes') {
-                const client = new MongoClient(MONGO_URL);
-                await client.connect();
-                const db = client.db(DB_NAME);
-                const collection = db.collection(COLLECTION_NAME);
-                for (const doc of allDocs) {
-                    let exists = await collection.findOne({ text: doc.text });
-                    if (exists) {
-                        console.log('[MongoDB] Skipping duplicate chunk:', doc.text.slice(0, 60) + '...');
-                        continue;
-                    }
-                    await collection.insertOne(doc);
-                    console.log('[MongoDB] Inserted chunk:', doc.text.slice(0, 60) + '...');
-                }
-                await client.close();
-                console.log('All chunks stored in MongoDB.');
-            } else {
-                console.log('Aborted. No chunks were stored.');
-            }
-            rl.close();
-            resolve();
-        });
-    });
 }
 
 processFamilyLaw(data)
