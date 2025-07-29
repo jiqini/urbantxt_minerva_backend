@@ -18,17 +18,38 @@ const COLLECTION_NAME = 'tag';
 const RETRIES = 3;
 
 const Tags = [
-  "child custody", "shared custody", "visitation rights", "divorce", "contested divorce", "child support", "spousal support", 
-  "parental authority", "adoption", "domestic violence", "protection order", "property separation", "paternity", "alimony",
-  "lawsuit filing", "civil trial", "evidence submission", "appeals process", "court deadlines", "judicial decision", 
-  "legal representation", "jurisdiction", "court notification", "procedural hearing", "default judgment", "court documentation",
-  "domestic abuse", "child abuse", "restraining order", "criminal complaint", "protective measures",
-  "request custody", "modify custody", "enforce visitation", "file for divorce", "request protection order", "appeal ruling", 
-  "petition for adoption", "challenge custody", "request spousal support",
-  "family law el salvador", "civil procedure el salvador", "court process", "el salvador family court", "legal process el salvador",
-  "procedural code"
+    "civil procedure", "civil code", "lawsuit process", "legal procedure", "appeals", "evidence rules",
+    "trial process", "commercial law", "judicial hearings", "procedural law", "jurisdiction", "deadlines",
+    "notifications", "motions", "remedies", "civil court", "litigation", "constitution", "legislative power", "executive power", "judicial power", "state organization",
+    "president of the republic", "human rights", "constitutional rights", "due process", "presumption of innocence",
+    "freedom of expression", "freedom of religion", "right to privacy", "habeas corpus", "nationality", "citizenship",
+    "electoral process", "political parties", "public officials", "family rights", "children's rights", "elderly rights",
+    "social security", "public health", "education rights", "public finance", "national budget", "tax system",
+    "natural resources", "flag and symbols", "language", "official religion", "national holidays", "child custody", "shared custody", "visitation rights", "divorce", "contested divorce", "child support", "spousal support", 
+    "parental authority", "adoption", "domestic violence", "protection order", "property separation", "paternity", "alimony",
+    "lawsuit filing", "civil trial", "evidence submission", "appeals process", "court deadlines", "judicial decision", 
+      "legal representation", "jurisdiction", "court notification", "procedural hearing", "default judgment", "court documentation",
+      "domestic abuse", "child abuse", "restraining order", "criminal complaint", "protective measures",
+      "request custody", "modify custody", "enforce visitation", "file for divorce", "request protection order", "appeal ruling", 
+      "petition for adoption", "challenge custody", "request spousal support",
+      "family law el salvador", "civil procedure el salvador", "court process", "el salvador family court", "legal process el salvador",
+      "procedural code", "tax amnesty", "fiscal forgiveness", "debt regularization", "tax compliance", "tax obligations",
+        "customs penalties", "social security debt", "ISSS", "Dirección General de Impuestos Internos",
+        "Dirección General de Aduanas", "tributary law", "transitional tax law", "tax relief El Salvador",
+        "government debt programs", "taxpayer benefits", "payment plans", "late tax payments",
+        "legal deadlines", "reduced interest and penalties", "victim protection", "gender violence", "domestic violence", "protective measures", "sexual violence",
+          "judicial protection", "victim rights", "psychosocial support", "legal assistance", "restraining order",
+          "preventative measures", "reparations", "violence against women", "violence against children",
+          "court proceedings", "law enforcement", "criminal justice process", "human rights", "due process", "consumer protection", "consumer rights", "product warranties", "false advertising", "deceptive practices",
+            "inspections", "complaints and claims", "mediation", "consumer agency", "sanctions and fines",
+            "administrative procedure", "consumer dispute resolution", "Defensoría del Consumidor", "service contracts",
+            "retail regulations", "enforcement powers", "divorce", "custody", "shared custody", "visitation rights", "parental authority", "parental responsibility", "alimony", 
+                "child support", "marriage annulment", "adoption", "joint adoption", "individual adoption", "domestic violence", "protective measures", 
+                "property division", "family mediation", "minor protection", "emancipation", "family court procedure", "father’s rights", 
+                "mother’s rights", "cohabitation", "separation", "civil union", "paternity", "maternity", "guardianship", "legal representative", 
+                "child removal", "suspension of rights", "modification of measures", "family residence", "child travel", "child abduction", 
+                "custody transfer", "special tutor", "child education", "child housing", "spousal support", "family registry", "name change"
 ];
-
 const data = require('../output_parsed_pdf/output_new1.json');
 
 function splitSentences(text) {
@@ -86,7 +107,7 @@ async function getEmbedding(text) {
     for (let attempt = 0; attempt < RETRIES; attempt++) {
         try {
             const response = await openai.embeddings.create({
-            model: 'text-embedding-ada-002',
+            model: 'text-embedding-3-small',
             input: text,
         });
         return response.data[0].embedding;
@@ -99,17 +120,35 @@ async function getEmbedding(text) {
 }
 
 async function getTagsLLM(text) {
-    const prompt = `Given the following legal or civil text, select all applicable tags from this list ONLY (do not invent new tags, do not use synonyms): ${JSON.stringify(Tags)}. Avoid generic tags like "law" or "article".\n\nText: ${text}\n\nReturn the tags as a JSON array of lowercase strings, like:\n["divorce", "visitation rights", "parental authority"]`;
+    const prompt = `
+You are a legal expert specializing in family and civil law in El Salvador.
+
+Your task is to classify the following legal or civil text by selecting only the relevant tags from this fixed list:
+${JSON.stringify(Tags)}
+
+Strict rules:
+- Use only the tags from the list above. Do NOT invent new tags, use synonyms, or modify existing tags.
+- Do NOT include vague or generic terms like "law", "article", or "legal".
+- Only include tags that are clearly and specifically relevant to the content. Be concise and precise.
+
+Legal text:
+"""
+${text}
+"""
+
+Return your answer as a valid JSON array of lowercase strings. Example:
+["divorce", "visitation rights", "parental authority"]
+`.trim();
     for (let attempt = 0; attempt < RETRIES; attempt++) {
         try {
             const response = await openai.chat.completions.create({
             model: 'gpt-3.5-turbo',
             messages: [
-                { role: 'system', content: 'You are a legal and civil procedure expert for El Salvador.' },
+                { role: 'system', content: 'You are a legal expert specializing in family and civil law in El Salvador. Only respond with valid tags from the approved list and no extra commentary.' },
                 { role: 'user', content: prompt }
             ],
             temperature: 0.0,
-            max_tokens: 100,
+            max_tokens: 300,
             });
             // Extract JSON array from response
             const content = response.choices[0].message.content;
@@ -130,50 +169,63 @@ async function getTagsLLM(text) {
 
 async function processLegalText(data) {
     const client = new MongoClient(MONGO_URL);
-    await client.connect();
-    const db = client.db(DB_NAME);
-    const collection = db.collection(COLLECTION_NAME);
-    let elementIdx = 0;
-    for (const element of data) {
-        elementIdx++;
-        let body = element.body ? element.body.trim() : null;
-        let heading = element.heading ? element.heading.trim() : null;
-        // Extract article from body if present
-        let article = null;
-        if (body) {
-            const artRegex = /(Art\.\?\s*\d+)/i;
-            const match = body.match(artRegex);
-            if (match) {
-                article = match[1];
-                body = body.replace(article, '').trim();
-                body = body.replace(/^[-.\s]+/, '');
+    try {
+        await client.connect();
+        const db = client.db(DB_NAME);
+        const collection = db.collection(COLLECTION_NAME);
+        let chunkCount = 0;
+        for (const element of data) {
+            let body = element.body ? element.body.trim() : null;
+            let heading = element.heading ? element.heading.trim() : null;
+            // Extract article from body if present
+            let article = null;
+            if (body) {
+                const artRegex = /(Art\.\?\s*\d+)/i;
+                const match = body.match(artRegex);
+                if (match) {
+                    article = match[1];
+                    body = body.replace(article, '').trim();
+                    body = body.replace(/^[-.\s]+/, '');
+                }
+            }
+            if (!body) continue;
+            const chunks = createChunks(body, 1500, 250);
+            for (const chunkText of chunks) {
+                const embedding = await getEmbedding(chunkText);
+                const tags = await getTagsLLM(chunkText);
+                const doc = {
+                    text: chunkText,
+                    embedding,
+                    tags,
+                    source: 'output_new1',
+                    heading,
+                    article: article || null
+                };
+                // Preview chunk before storing/skipping
+                console.dir({
+                    heading: doc.heading,
+                    article: doc.article,
+                    tags: doc.tags,
+                    text: doc.text,
+                    embedding_preview: doc.embedding ? doc.embedding.slice(0, 8) : null
+                }, { depth: 2, maxArrayLength: 20 });
+                // Check for duplicate by text
+                const exists = await collection.findOne({ text: doc.text });
+                if (exists) {
+                    console.log('[MongoDB] Skipping duplicate chunk:', doc.text.slice(0, 60) + '...');
+                } else {
+                    await collection.insertOne(doc);
+                    chunkCount++;
+                    console.log(`[MongoDB] Inserted chunk #${chunkCount}:`, doc.text.slice(0, 60) + '...');
+                }
             }
         }
-        if (!body) continue;
-        const chunks = createChunks(body, 1500, 250);
-        for (const chunkText of chunks) {
-            const embedding = await getEmbedding(chunkText);
-            const tags = await getTagsLLM(chunkText);
-            const doc = {
-                text: chunkText,
-                embedding,
-                tags,
-                source: 'output_new1',
-                heading,
-                article: article || null
-            };
-            console.log('\n[Storing Chunk]');
-            console.dir(doc, { depth: 3, maxArrayLength: 20 });
-            let exists = await collection.findOne({ text: doc.text });
-            if (exists) {
-                console.log('[MongoDB] Skipping duplicate chunk:', doc.text.slice(0, 60) + '...');
-                continue;
-            }
-            await collection.insertOne(doc);
-            console.log('[MongoDB] Inserted chunk:', doc.text.slice(0, 60) + '...');
-        }
+        console.log(`\nInserted ${chunkCount} new chunks into MongoDB.`);
+    } catch (err) {
+        console.error('Error during MongoDB operation:', err);
+    } finally {
+        await client.close();
     }
-    await client.close();
 }
 
 processLegalText(data)

@@ -259,9 +259,10 @@ if __name__ == "__main__":
         print("Usage: python parse_pdf_new2.py <pdf_path>")
         sys.exit(1)
     pdf_path = sys.argv[1]
+    import os
     # Extract structured blocks from the PDF
     blocks = extract_pdf_structure(pdf_path)
-    # Print results as formatted JSON
-    with open("output.json", "w", encoding="utf-8") as f:
+    output_path = os.path.join(os.path.dirname(__file__), "../output_parsed_pdf/output_new3.json")
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(blocks, f, ensure_ascii=False, indent=2)
-    print("Results written to output.json")
+    print(f"Results written to {output_path}")
