@@ -13,7 +13,7 @@ const DB_NAME = 'tagged_db';
 const COLLECTION_NAME = 'tag';
 
 // Tag list for LLM tagging
-const TAGS = [
+const Tags = [
     "civil procedure", "civil code", "lawsuit process", "legal procedure", "appeals", "evidence rules",
     "trial process", "commercial law", "judicial hearings", "procedural law", "jurisdiction", "deadlines",
     "notifications", "motions", "remedies", "civil court", "litigation", "constitution", "legislative power", "executive power", "judicial power", "state organization",
@@ -49,7 +49,24 @@ const TAGS = [
 
 // Tag the query using OpenAI LLM
 async function getTagsLLM(text) {
-    const prompt = `Given the following legal or civil text, select all applicable tags from this list ONLY (do not invent new tags, do not use synonyms): ${JSON.stringify(TAGS)}.\n\nText: ${text}\n\nReturn the tags as a JSON array of lowercase strings, like:\n["family", "custody", "child support", "civil"]`;
+    const prompt = `You are a legal expert specializing in family and civil law in El Salvador.
+
+Your task is to classify the following legal or civil text by selecting only the relevant tags from this fixed list:
+${JSON.stringify(Tags)}
+
+Strict rules:
+- Use only the tags from the list above. Do NOT invent new tags, use synonyms, or modify existing tags.
+- Do NOT include vague or generic terms like "law", "article", or "legal".
+- Only include tags that are clearly and specifically relevant to the content. Be concise and precise.
+
+Legal text:
+"""
+${text}
+"""
+
+Return your answer as a valid JSON array of lowercase strings. Example:
+["divorce", "visitation rights", "parental authority"]
+`.trim();
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
             const response = await openai.chat.completions.create({
@@ -59,14 +76,14 @@ async function getTagsLLM(text) {
                     { role: 'user', content: prompt }
                 ],
                 temperature: 0.0,
-                max_tokens: 100,
+                max_tokens: 300,
             });
             const content = response.choices[0].message.content;
             const match = content.match(/\[.*\]/s);
             if (!match) throw new Error('No JSON array found in LLM response');
             let tags = JSON.parse(match[0]);
             tags = Array.from(new Set(tags.map(t => t.toLowerCase())));
-            tags = tags.filter(t => TAGS.includes(t));
+            tags = tags.filter(t => Tags.includes(t));
             return tags;
         } catch (err) {
             console.warn(`[Tagging] OpenAI LLM failed (attempt ${attempt + 1}):`, err.message);
@@ -79,7 +96,7 @@ async function getTagsLLM(text) {
 // Function to get the embedding for a query string
 async function getEmbedding(text) {
     const response = await openai.embeddings.create({
-        model: 'text-embedding-ada-002',
+        model: 'text-embedding-3-small',
         input: text,
     });
     return response.data[0].embedding;
