@@ -3,14 +3,14 @@ import OpenAI from 'openai';
 // import { mongoService } from './mongodb';
 // To:
 import { databaseService } from './mongodb';
-import { config } from '../utils/config';
+import { config } from '../utils_1/config';
 import {
   MicroAgent,
   DocumentTemplateAgent,
   DeadlineAgent,
   ScenarioCoachAgent,
   ResourceLocatorAgent,
-  EtiquetteAgent
+  EtiquetteAgent,
 } from './MicroAgents';
 
 export interface AgentResponse {
@@ -55,16 +55,16 @@ export class AgentOrchestrator {
   async processQuery(query: string, context?: any): Promise<AgentResponse> {
     // Determine intent and route to appropriate agent(s)
     const intent = await this.classifyIntent(query);
-    
+
     // Get relevant legal context via MongoDB Vector Search
     const legalContext = await this.retrieveLegalContext(query);
-    
+
     // Execute agent(s)
     const agent = this.agents.get(intent.primaryAgent);
     if (!agent) {
       throw new Error(`Agent not found: ${intent.primaryAgent}`);
     }
-    
+
     return await agent.execute(query, { ...context, legalContext });
   }
 
@@ -80,13 +80,13 @@ export class AgentOrchestrator {
             "confidence": 0.0-1.0,
             "reasoning": "brief explanation",
             "caseType": "civil|family|labor|criminal|administrative"
-          }`
+          }`,
         },
-        { role: 'user', content: query }
+        { role: 'user', content: query },
       ],
       temperature: 0.1,
     });
-    
+
     return JSON.parse(response.choices[0].message.content!);
   }
 

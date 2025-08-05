@@ -10,7 +10,7 @@
  * Author: Ji Qi Ni, July 21, 2025
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 interface LawsuitFormData {
   ciudad: string;

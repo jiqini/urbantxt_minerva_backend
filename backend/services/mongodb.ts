@@ -1,5 +1,5 @@
 import Realm from 'realm';
-import { config } from '../utils/config';
+import { config } from '../utils_1/config';
 import { LegalDocumentSchema } from '../types/mongodb-schemas';
 
 class LegalDocument extends Realm.Object<LegalDocument> {
@@ -68,18 +68,19 @@ export class DatabaseService {
     limit: number = 5
   ): Promise<LegalDocument[]> {
     if (!this.realm) throw new Error('Database not connected');
-    
-    const documents = this.realm.objects<LegalDocument>('LegalDocument')
+
+    const documents = this.realm
+      .objects<LegalDocument>('LegalDocument')
       .filtered('title CONTAINS[c] $0 OR content CONTAINS[c] $0', query)
       .slice(0, limit);
-    
+
     return Array.from(documents);
   }
 
   // Add document
   async addDocument(doc: Omit<LegalDocument, '_id'>): Promise<void> {
     if (!this.realm) throw new Error('Database not connected');
-    
+
     this.realm.write(() => {
       this.realm!.create('LegalDocument', {
         ...doc,
