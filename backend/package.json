@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "playground-1.mongodb.js",
   "scripts": {
+    "dev": "npx ts-node --swc server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -10,11 +11,22 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/node-fetch": "^2.6.13",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.16.4"
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.16.4",
+    "node-fetch": "^3.3.2",
+    "openai": "^5.12.0"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.13.3",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.2.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }
