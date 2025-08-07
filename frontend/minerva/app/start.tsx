@@ -95,12 +95,6 @@ export default function StartScreen() {
 
   return (
     <View style={styles.introContainer}>
-      <TouchableOpacity
-        style={styles.debugButton}
-        onPress={() => router.push('/chatbot')}
-      >
-        <Text style={styles.debugButtonText}>Skip to Chatbot</Text>
-      </TouchableOpacity>
 
       {getStepContent()}
 
@@ -134,22 +128,6 @@ export default function StartScreen() {
 }
 
 const styles = StyleSheet.create({
-  debugButton: {
-    position: 'absolute',
-    top: 60,
-    right: 20,
-    backgroundColor: '#FF6B6B',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    zIndex: 999,
-    elevation: 5,
-  },
-  debugButtonText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
   imageContainer: {
     position: 'relative',
     width: 297,
