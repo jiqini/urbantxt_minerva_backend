@@ -7,15 +7,13 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import { router } from 'expo-router';
 import PillarLogo from '../assets/svg/pillarLogo.svg';
 import FirstProgressImg from '../assets/svg/FirstProgressimage.svg';
 import SecondProgressImg from '../assets/svg/secondProgressImage.svg';
-// import ThirdProgressImg from './svg/thirdProgressImage.svg';
-// import RightArrowIcon from './assets/rightArrow.svg';
 import LoginOrSignUp from './LoginOrSignUp';
-import ThirdProgressImg from '../assets/svg/thirdProgressImage.png';
-
-
+import ThirdProgressBackground from '../assets/svg/thirdProgressBackground.svg';
+import ThirdProgressImage from '../assets/images/progessImage.png';
 
 const BOX_COUNT = 3;
 const BOX_WIDTH = 30;
@@ -75,11 +73,13 @@ export default function StartScreen() {
       case 3:
         return (
           <>
-            <Image
-              source={ThirdProgressImg}
-              style={{ width: 297, height: 297, marginBottom: 85 }}
-              resizeMode="contain"
-            />
+            <View style={[styles.imageContainer, { marginBottom: 120}]}>
+              <ThirdProgressBackground width={297} height={297} />
+              <Image
+                source={ThirdProgressImage}
+                style={styles.thirdProgressImage}
+              />
+            </View>
 
             <Text style={[styles.text, styles.thirdProgressText]}>
               Elige los mejores abogados verificados {'\n'} en su área basado en sus calificaciones, {'\n'} experiencia y reseñas.
@@ -95,6 +95,7 @@ export default function StartScreen() {
 
   return (
     <View style={styles.introContainer}>
+
       {getStepContent()}
 
       {step >= 1 && step <= BOX_COUNT && (
@@ -127,6 +128,18 @@ export default function StartScreen() {
 }
 
 const styles = StyleSheet.create({
+  imageContainer: {
+    position: 'relative',
+    width: 297,
+    height: 297,
+  },
+  thirdProgressImage: {
+    position: 'absolute',
+    top: 77,
+    left: 26,
+    width: 240,
+    height: 220,
+  },
   introContainer: {
     flex: 1,
     backgroundColor: '#E6F3FF',

@@ -15,7 +15,7 @@ class AIService {
   private baseUrl = 'https://api.openai.com/v1';
 
   constructor() {
-    this.apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY || '';
+    this.apiKey = process.env.OPENAI_API_KEY || process.env.EXPO_PUBLIC_OPENAI_API_KEY || '';
   }
 
   async chat(messages: ChatMessage[]): Promise<AIResponse> {

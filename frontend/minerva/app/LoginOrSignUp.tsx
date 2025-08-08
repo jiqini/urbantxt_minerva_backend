@@ -7,7 +7,7 @@ export default function loginOrSignUpScreen() {
 
 
   const handleLogin = async () => {
-    router.replace('/login');
+    router.replace('/(tabs)'); //goes to tabs for testing reasons
   };
   const handleSignup = async () => {
     router.replace('/signUp');
