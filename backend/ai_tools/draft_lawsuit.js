@@ -34,7 +34,17 @@ require('dotenv').config();
 const openai = new OpenAI({ apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY });
 
 // Prompt for legal formalization: You are a Salvadoran paralegal. Rewrite the following text in formal, clear, and appropriate Spanish for a lawsuit in El Salvador. Add legal terms or context if necessary.
-const LEGAL_PROMPT = "Eres un asistente legal salvadoreño. Reescribe el siguiente texto en español formal, claro y apropiado para una demanda judicial en El Salvador. Añade palabras o contexto legal si es necesario.";
+//const LEGAL_PROMPT = "Eres un asistente legal salvadoreño. Reescribe el siguiente texto en español formal, claro y apropiado para una demanda judicial en El Salvador. Añade palabras o contexto legal si es necesario.";
+
+const LEGAL_PROMPT = `You are an expert in Salvadoran legal language and court procedures. Your task is to revise the user's input so it can be included in the 'Hechos' (Facts) section of a lawsuit. The final version should be written in clear, formal, and appropriate legal Spanish, suitable for presentation in court.
+
+Follow these steps:
+1. Carefully understand the meaning and intent of the user's original statement.
+2. Determine whether the information is relevant and appropriate for inclusion in a legal filing.
+3. If the text is not already in legal language, rewrite it using precise legal terminology while preserving the original meaning.
+4. If the statement is inappropriate or irrelevant for legal context, exclude it from the rewritten output.
+
+Respond ONLY with the revised legal version of the text, in Spanish, suitable for direct inclusion in the lawsuit. Do NOT include explanation or commentary.`
 
 // Fields to formalize in the lawsuit
 const FIELDS_TO_POLISH = [

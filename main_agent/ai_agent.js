@@ -7,6 +7,7 @@
 require('dotenv').config();
 const { OpenAI } = require('openai');
 const { getQueryResults } = require('../backend/utils/query_semantic_search');
+const { getSystemPromptForQuery } = require('./domain_classifier');
 
 const openai = new OpenAI({ apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY });
 
@@ -30,6 +31,32 @@ class LegalAgent {
     getRecentContext(turns = 2) {
         const recentMessages = this.conversationHistory.slice(-(turns * 2));
         return recentMessages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+    }
+
+    // Detect language based on basic keyword presence
+    detectLanguage(query) {
+        const spanishKeywords = ['niños', 'hijos', 'divorcio', 'custodia', 'violencia', 'abuso'];
+        const englishKeywords = ['children', 'custody', 'abuse', 'divorce', 'violence'];
+
+        let spanishCount = 0;
+        let englishCount = 0;
+
+        // Count occurrences of keywords from both languages
+        spanishKeywords.forEach(keyword => {
+            if (query.toLowerCase().includes(keyword)) spanishCount++;
+        });
+        englishKeywords.forEach(keyword => {
+            if (query.toLowerCase().includes(keyword)) englishCount++;
+        });
+
+        // Determine language based on keyword presence
+        if (spanishCount > englishCount) {
+            return 'spanish';
+        } else if (englishCount > spanishCount) {
+            return 'english';
+        } else {
+            return 'default'; // Default if no clear language is detected
+        }
     }
 
     // Determine if query needs semantic search
@@ -60,7 +87,6 @@ Answer:`;
                 temperature: 0,
                 max_tokens: 70
             });
-
 
             const classification = response.choices[0].message.content.toLowerCase();
             return classification.includes('true') || classification.includes('yes') || classification.includes('search');
@@ -103,29 +129,18 @@ Answer:`;
                 }
             }
 
-            // Generate response with full conversation context
+            // NEW: Detect language and generate appropriate response
+            const detectedLanguage = this.detectLanguage(userInput);
+            const domainPrompt = await getSystemPromptForQuery(userInput);
+            
+            const languageInstruction = detectedLanguage === 'spanish' 
+                ? '\n\nIMPORTANT: Respond in Spanish since the user asked in Spanish.'
+                : '\n\nIMPORTANT: Respond in English since the user asked in English.';
+
             const systemMessage = {
                 role: 'system',
-                role: 'system',
-                content: `You are a legal assistant specialized in El Salvador law. 
-                
-                CRITICAL INSTRUCTIONS:
-                - ONLY answer questions related to El Salvador law, legal procedures, court processes, and legal rights in El Salvador
-                - If legal documents were found, base your response PRIMARILY on the provided legal context
-                - When referencing legal articles:
-                  * ONLY cite article numbers that appear in the legal context below
-                  * Do NOT invent, guess, or reference articles not provided in the context
-                  * If no specific article is found, refer to "the legal provisions" or "El Salvador law"
-                  * When you do cite an article, use the exact format provided in the context
-                - Quote relevant text directly from the sources when applicable
-                - Be conversational and remember previous parts of this chat
-                - If you don't have specific legal information, be honest about limitations
-                - Always recommend consulting with a licensed attorney for specific legal advice
-                
-                If the user asks about non-legal topics, respond with:
-                "I'm specifically designed to assist with El Salvador legal matters only. Please ask me about El Salvador laws, court procedures, legal rights, or legal processes, and I'll be happy to help you."
-                
-                ${legalContext ? `Legal context found: ${legalContext}` : 'No specific legal documents found for this query.'}`
+                content: domainPrompt + languageInstruction + 
+                    (legalContext ? `\n\nLegal context found: ${legalContext}` : '\n\nNo specific legal documents found for this query.')
             };
 
             const response = await openai.chat.completions.create({
@@ -140,29 +155,21 @@ Answer:`;
 
             let assistantResponse = response.choices[0].message.content;
             
-            // ⚠️ HALLUCINATION DETECTION: Check for invented articles
-            const mentionedArticles = assistantResponse.match(/Art\.?\s?\d+|Article\s+\d+/gi) || [];
-            const validArticles = searchResults.map(c => c.article).filter(Boolean);
+            // ⚠️ ENHANCED ARTICLE VALIDATION: Compare against retrieved articles
+            const retrievedArticleNums = searchResults
+                .map(r => r.article?.match(/\d+/)?.[0])
+                .filter(Boolean);
             
-            const hallucinatedArticles = [];
-            mentionedArticles.forEach(articleMention => {
-                const articleNumber = articleMention.match(/\d+/)[0];
-                const isValid = validArticles.some(validArt => 
-                    validArt.includes(articleNumber) || validArt.includes(`Art. ${articleNumber}`)
-                );
-                
-                if (!isValid) {
-                    hallucinatedArticles.push(articleMention);
-                    console.warn(`⚠️ Possible hallucination: ${articleMention} - not found in search results`);
-                }
+            const mentionedInResponse = assistantResponse.match(/Art(ículo)?\.?\s*\d+/gi) || [];
+            
+            const confirmedHallucinations = mentionedInResponse.filter(mentioned => {
+                const articleNum = mentioned.match(/\d+/)?.[0];
+                return !retrievedArticleNums.includes(articleNum);
             });
             
-            // Optionally add warning to response
-            if (hallucinatedArticles.length > 0) {
-                console.warn(`⚠️ Detected ${hallucinatedArticles.length} potentially hallucinated article(s): ${hallucinatedArticles.join(', ')}`);
-                
-                // You could even modify the response to add a disclaimer:
-                // assistantResponse += `\n\n⚠️ Note: Some article references may need verification as they weren't found in the retrieved legal documents.`;
+            if (confirmedHallucinations.length > 0) {
+                console.warn(`🚨 CONFIRMED HALLUCINATIONS: ${confirmedHallucinations.join(', ')}`);
+                console.log(`📚 Available articles in search: ${retrievedArticleNums.join(', ') || 'None'}`);
             }
             
             // 2. After LLM response: Check for usage and detect used chunks
@@ -251,7 +258,8 @@ Answer:`;
                 usedSearch: needsSearch,
                 usedChunks: usedChunks,
                 referencedArticles: referencedArticles,
-                hallucinatedArticles: hallucinatedArticles || []
+                hallucinatedArticles: confirmedHallucinations || [],
+                retrievedArticles: retrievedArticleNums
             };
 
         } catch (error) {

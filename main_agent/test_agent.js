@@ -63,15 +63,15 @@ async function handleUserInput() {
                     console.log('No legal documents found');
                 }
 
-                // ✅ ADD THIS: Show which chunks were actually used
-                if (result.usedChunks && result.usedChunks.length > 0) {
-                    console.log(`\n✅ Actually used ${result.usedChunks.length} chunks in response:`);
-                    result.usedChunks.forEach((chunk, i) => {
-                        console.log(`   • ${chunk.article || chunk.heading || 'Legal Text'}`);
-                    });
-                } else {
-                    console.log(`\n❌ No chunks were detected as used (Used chunks: ${result.usedChunks?.length || 0})`);
-                }
+                // // ✅ ADD THIS: Show which chunks were actually used
+                // if (result.usedChunks && result.usedChunks.length > 0) {
+                //     console.log(`\n✅ Actually used ${result.usedChunks.length} chunks in response:`);
+                //     result.usedChunks.forEach((chunk, i) => {
+                //         console.log(`   • ${chunk.article || chunk.heading || 'Legal Text'}`);
+                //     });
+                // } else {
+                //     console.log(`\n❌ No chunks were detected as used (Used chunks: ${result.usedChunks?.length || 0})`);
+                // }
                 
                 // ✅ ADD THIS: Show referenced articles
                 if (result.referencedArticles && result.referencedArticles.length > 0) {
