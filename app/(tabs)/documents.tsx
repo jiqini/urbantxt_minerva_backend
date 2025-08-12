@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { FileText, Download, Plus, ChevronRight, Clock, CircleCheck as CheckCircle, Sparkles } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { documentService } from '@/services/documentService';
+import { documentService } from '@/backend/services/documentService';
 
 export default function DocumentsScreen() {
   const { t } = useLanguage();

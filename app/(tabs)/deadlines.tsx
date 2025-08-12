@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Modal, TextInput,
 import { LinearGradient } from 'expo-linear-gradient';
 import { Calendar, Clock, Plus, TriangleAlert as AlertTriangle, X, CalendarPlus, Sparkles } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { aiService } from '@/services/aiService';
-import { calendarService } from '@/services/calendarService';
+import { aiService } from '@/backend/services/aiService';
+import { calendarService } from '@/backend/services/calendarService';
 
 export default function DeadlinesScreen() {
   const { t } = useLanguage();

@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Keyboa
 import { LinearGradient } from 'expo-linear-gradient';
 import { MessageSquare, Mic, Send, Volume2, User, Bot, Sparkles, Zap } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { aiService } from '@/services/aiService';
-import { speechService } from '@/services/speechService';
+import { aiService } from '@/backend/services/aiService';
+import { speechService } from '@/backend/services/speechService';
 
 interface Message {
   id: string;

@@ -16,7 +16,6 @@ const rl = readline.createInterface({
 
 const agent = new LegalAgent();
 
-// terminal UI
 console.log('El Salvador Legal AI Agent - Test Mode');
 console.log('Type your questions and press Enter. Option: Type "exit" to quit, "clear" to reset the conversations.\n');
 
@@ -62,26 +61,10 @@ async function handleUserInput() {
                 } else {
                     console.log('No legal documents found');
                 }
-
-                // // ✅ ADD THIS: Show which chunks were actually used
-                // if (result.usedChunks && result.usedChunks.length > 0) {
-                //     console.log(`\n✅ Actually used ${result.usedChunks.length} chunks in response:`);
-                //     result.usedChunks.forEach((chunk, i) => {
-                //         console.log(`   • ${chunk.article || chunk.heading || 'Legal Text'}`);
-                //     });
-                // } else {
-                //     console.log(`\n❌ No chunks were detected as used (Used chunks: ${result.usedChunks?.length || 0})`);
-                // }
                 
                 // ✅ ADD THIS: Show referenced articles
                 if (result.referencedArticles && result.referencedArticles.length > 0) {
                     console.log(`\n📌 Articles referenced: ${result.referencedArticles.join(', ')}`);
-                }
-                
-                // ⚠️ ADD THIS: Show hallucination warnings
-                if (result.hallucinatedArticles && result.hallucinatedArticles.length > 0) {
-                    console.log(`\n⚠️  WARNING: Potentially hallucinated articles: ${result.hallucinatedArticles.join(', ')}`);
-                    console.log('   These articles were mentioned but not found in the search results.');
                 }
                 
             } else {

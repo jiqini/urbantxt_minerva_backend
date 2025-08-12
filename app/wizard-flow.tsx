@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, ArrowRight, CircleCheck as CheckCircle, CircleAlert as AlertCircle, FileText, Calendar } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { aiService } from '@/services/aiService';
+import { aiService } from '@/backend/services/aiService';
 
 interface Step {
   id: string;

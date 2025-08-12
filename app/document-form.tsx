@@ -4,8 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, FileText, Download, Share, Sparkles } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { documentService } from '@/services/documentService';
-import { aiService } from '@/services/aiService';
+import { documentService } from '@/backend/services/documentService';
+import { aiService } from '@/backend/services/aiService';
 
 export default function DocumentFormScreen() {
   const { templateId } = useLocalSearchParams<{ templateId: string }>();
