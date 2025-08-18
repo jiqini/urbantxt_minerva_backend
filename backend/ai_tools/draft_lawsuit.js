@@ -38,6 +38,7 @@ const LEGAL_PROMPT = "Eres un asistente legal salvadoreño. Reescribe el siguien
 
 // Fields to formalize in the lawsuit
 const FIELDS_TO_POLISH = [
+  'descripcionCaso', // Description of the case
   'hechos',        // Facts of the case
   'fundamento',    // Legal basis
   'pretensiones',  // Requests to the court
@@ -104,60 +105,78 @@ function generateLawsuitHTML(form) {
       </head>
       <body>
         <h1>Demanda Judicial</h1>
-        <div class="section"><strong>Ciudad del Juzgado:</strong> ${form.ciudad}</div>
-        <div class="section"><strong>Nombre completo:</strong> ${form.nombreCompleto}</div>
-        <div class="section"><strong>Edad:</strong> ${form.edad}</div>
-        <div class="section"><strong>Profesión u ocupación:</strong> ${form.profesion}</div>
-        <div class="section"><strong>Número de DUI o pasaporte:</strong> ${form.dui}</div>
-        <div class="section"><strong>Dirección de residencia:</strong> ${form.direccionResidencia}</div>
-        <div class="section"><strong>Dirección para notificaciones:</strong> ${form.notificaciones}</div>
+        <div class="section"><strong>Ciudad del Juzgado:</strong> ${form.ciudad || ''}</div>
+        <div class="section"><strong>Nombre completo:</strong> ${form.nombreCompleto || ''}</div>
+        <div class="section"><strong>Edad:</strong> ${form.edad || ''}</div>
+        <div class="section"><strong>Profesión u ocupación:</strong> ${form.profesion || ''}</div>
+        <div class="section"><strong>Número de DUI o pasaporte:</strong> ${form.dui || ''}</div>
+        <div class="section"><strong>Dirección de residencia:</strong> ${form.direccionResidencia || ''}</div>
+        <div class="section"><strong>Dirección para notificaciones:</strong> ${form.notificaciones || ''}</div>
         <h2>Relación de los Hechos</h2>
-        <div class="section">${form.hechos}</div>
+        <div class="section">${form.hechos || ''}</div>
         <h2>Fundamento de Derecho</h2>
-        <div class="section">${form.fundamento}</div>
+        <div class="section">${form.fundamento || ''}</div>
         <h2>Pretensiones</h2>
-        <div class="section">${form.pretensiones}</div>
+        <div class="section">${form.pretensiones || ''}</div>
         <h2>Oferta de Pruebas</h2>
-        <div class="section">${form.pruebas}</div>
+        <div class="section">${form.pruebas || ''}</div>
         <h2>Firma y Fecha</h2>
-        <div class="section"><strong>Ciudad de firma:</strong> ${form.ciudadFirma}</div>
-        <div class="section"><strong>Fecha:</strong> ${form.fecha}</div>
-        <div class="section"><strong>Firma del demandante:</strong> ${form.firma}</div>
+        <div class="section"><strong>Ciudad de firma:</strong> ${form.ciudadFirma || ''}</div>
+        <div class="section"><strong>Fecha:</strong> ${form.fecha || ''}</div>
+        <div class="section"><strong>Firma del demandante:</strong> ${form.firma || ''}</div>
       </body>
     </html>
   `;
 }
 
-
-// Example usage:
-// This block demonstrates the full workflow: polish user input, generate HTML, and create PDF.
-(async () => {
-  // Example user form data
-  const userForm = {
-    ciudad: 'San Salvador',
-    nombreCompleto: 'Juan Perez',
-    edad: '35',
-    profesion: 'Abogado',
-    dui: '01234567-8',
-    direccionResidencia: 'Calle Principal #123',
-    notificaciones: 'correo@ejemplo.com',
-    hechos: 'El demandado incumplió el contrato.',
-    fundamento: 'Art. 123 del Código Civil.',
-    pretensiones: 'Pago de daños y perjuicios.',
-    pruebas: 'Contrato firmado, testigos.',
-    ciudadFirma: 'San Salvador',
-    fecha: '2025-07-21',
-    firma: 'Juan Perez'
-  };
-
-  // Polish the form fields using OpenAI
-  const polishedForm = await polishLawsuitForm(userForm);
-  // Generate HTML from the polished form
+/*
+ * This function is the main entry point for backend use.
+ * Arguments:
+ *   - form: The raw user form data object.
+ * Returns:
+ *   - The path to the generated PDF file.
+ */
+async function generateLawsuitPDF(form) {
+  const polishedForm = await polishLawsuitForm(form);
   const html = generateLawsuitHTML(polishedForm);
-  // Output PDF file path
   const pdfPath = 'demanda_judicial.pdf';
-  // Generate PDF from HTML
   await htmlToPDF(html, pdfPath);
-  // Log result
-  console.log(`PDF generated at: ${pdfPath}`);
-})();
+  return pdfPath;
+}
+
+// Export for backend use
+module.exports = { generateLawsuitPDF };
+
+// Example usage (only runs if this file is executed directly)
+if (require.main === module) {
+  (async () => {
+    // Example user form data
+    const userForm = {
+      ciudad: 'San Salvador',
+      nombreCompleto: 'Juan Perez',
+      edad: '35',
+      profesion: 'Abogado',
+      dui: '01234567-8',
+      direccionResidencia: 'Calle Principal #123',
+      notificaciones: 'correo@ejemplo.com',
+      hechos: 'El demandado incumplió el contrato.',
+      fundamento: 'Art. 123 del Código Civil.',
+      pretensiones: 'Pago de daños y perjuicios.',
+      pruebas: 'Contrato firmado, testigos.',
+      ciudadFirma: 'San Salvador',
+      fecha: '2025-07-21',
+      firma: 'Juan Perez'
+    };
+
+    // Polish the form fields using OpenAI
+    const polishedForm = await polishLawsuitForm(userForm);
+    // Generate HTML from the polished form
+    const html = generateLawsuitHTML(polishedForm);
+    // Output PDF file path
+    const pdfPath = 'demanda_judicial.pdf';
+    // Generate PDF from HTML
+    await htmlToPDF(html, pdfPath);
+    // Log result
+    console.log(`PDF generated at: ${pdfPath}`);
+  })();
+}

@@ -21,6 +21,7 @@ router.post('/chat', async (req, res) => {
     const userMessage = messages[messages.length - 1].content;
     
     const result = await agent.handleQuery(userMessage);
+    console.log('Agent response by itself:', result);
     
     console.log('AI response generated');
     console.log('Used search:', result.usedSearch);

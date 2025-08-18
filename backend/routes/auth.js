@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 router.post('/signup', async (req, res) => {
   const { username, emailOrPhone, password } = req.body;
@@ -39,8 +40,24 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Contraseña incorrecta.' });
     }
 
-    res.status(200).json({ message: 'Inicio de sesión exitoso.' });
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      process.env.JWT_SECRET || 'minerva-secret-key',
+      { expiresIn: '7d' }
+    )
+
+    // ✅ RETURN USER DATA AND TOKEN
+    res.status(200).json({ 
+      message: 'Inicio de sesión exitoso.',
+      user: {
+        id: user._id.toString(),
+        username: user.username,
+        emailOrPhone: user.emailOrPhone
+      },
+      token: token
+    });
   } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({ message: 'Error del servidor.' });
   }
 });
